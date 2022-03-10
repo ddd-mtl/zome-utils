@@ -9,11 +9,16 @@ jobs:
     # Fetch source code
     - name: Fetch source code
       uses: actions/checkout@v2
+    # Install WASM
+    - name: Install WASM
+      shell: bash
+      run: |
+        rustup target install wasm32-unknown-unknown
     # Build
     - name: Build
       run: |
         cargo build
-      # Build WASM
+    # Build WASM
     - name: Build WASM
       run: |
         cargo build --release --target wasm32-unknown-unknown
