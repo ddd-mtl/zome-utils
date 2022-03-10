@@ -1,0 +1,22 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    # Fetch source code
+    - name: Fetch source code
+      uses: actions/checkout@v2
+    # Build
+    - name: Build
+      run: |
+        cargo build
+      # Build WASM
+    - name: Build WASM
+      run: |
+        cargo build --release --target wasm32-unknown-unknown
+    - name: run tests
+      run: |
+        cargo test
