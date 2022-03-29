@@ -4,21 +4,6 @@ use hdk::prelude::*;
 use crate::*;
 
 
-///
-pub fn create_entry_relaxed<T: EntryDefRegistration>(typed: T) -> ExternResult<HeaderHash>
-   where
-      hdk::prelude::Entry: TryFrom<T>,
-      <hdk::prelude::Entry as TryFrom<T>>::Error: std::fmt::Debug,
-{
-   let create_input = CreateInput::new(
-      T::entry_def_id(),
-      Entry::try_from(typed).unwrap(),
-      ChainTopOrdering::Relaxed,
-   );
-   return create_entry(create_input);
-}
-
-
 /// Return HeaderHash from SignedHeaderHashed
 pub fn shh_to_hh(shh: element::SignedHeaderHashed) -> HeaderHash {
    shh.header_hashed().as_hash().to_owned()

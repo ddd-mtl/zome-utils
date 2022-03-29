@@ -5,6 +5,7 @@ mod get;
 mod links;
 mod query;
 mod utils;
+mod relaxed;
 
 
 pub use debug::*;
@@ -12,6 +13,7 @@ pub use get::*;
 pub use links::*;
 pub use query::*;
 pub use utils::*;
+pub use relaxed::*;
 
 //----------------------------------------------------------------------------------------
 
