@@ -6,7 +6,7 @@ use crate::*;
 
 /// Return HeaderHash from SignedHeaderHashed
 pub fn shh_to_hh(shh: element::SignedHeaderHashed) -> HeaderHash {
-   shh.header_hashed().as_hash().to_owned()
+   shh.as_hash().to_owned()
 }
 
 
