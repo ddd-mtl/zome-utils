@@ -7,6 +7,20 @@ use crate::*;
 pub type TypedEntryAndHash<T> = (T, HeaderHash, EntryHash);
 pub type OptionTypedEntryAndHash<T> = Option<TypedEntryAndHash<T>>;
 
+
+//// Get untyped entry from eh
+pub fn get_entry_from_eh(eh: EntryHash) -> ExternResult<Entry> {
+   match get(eh, GetOptions::content())? {
+      None => error("get_entry_from_eh(): Entry not found"),
+      Some(element) => match element.entry() {
+         element::ElementEntry::Present(entry) =>  {
+            Ok(entry.clone())
+         }
+         _ => error("No Entry at element"),
+      }
+   }
+}
+
 /// Get EntryType of an Entry
 pub fn get_entry_type(entry: &Entry) -> ExternResult<EntryType> {
    let entry_type= match entry {
