@@ -22,7 +22,7 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(
    //include_latest_updated_entry: bool,
 ) -> ExternResult<Vec<(R, Link)>> {
    let links = get_links(base.into(), tag)?;
-   debug!("get_links_and_load_type() links found: {}", links.len());
+   //debug!("get_links_and_load_type() links found: {}", links.len());
    let result_pairs = get_links_details(&mut links.clone(), GetOptions::default())?;
    let typed_pairs = result_pairs
       .iter()
