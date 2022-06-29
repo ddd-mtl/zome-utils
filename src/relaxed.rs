@@ -1,17 +1,18 @@
 use hdk::prelude::*;
 
 ///
-pub fn create_entry_relaxed<T: EntryDefRegistration>(typed: T) -> ExternResult<HeaderHash>
+pub fn create_entry_relaxed<I: EntryDefRegistration, E>(typed: I) -> ExternResult<HeaderHash>
    where
-      hdk::prelude::Entry: TryFrom<T>,
-      <hdk::prelude::Entry as TryFrom<T>>::Error: std::fmt::Debug,
+      hdk::prelude::Entry: TryFrom<I, Error = E>,
+      <hdk::prelude::Entry as TryFrom<I>>::Error: std::fmt::Debug,
+      hdk::prelude::WasmError: From<E>,
 {
    let create_input = CreateInput::new(
-      T::entry_def_id(),
+      I::entry_def_id(),
       Entry::try_from(typed).unwrap(),
       ChainTopOrdering::Relaxed,
    );
-   return create_entry(create_input);
+   return create(create_input);
 }
 
 
@@ -19,12 +20,14 @@ pub fn create_entry_relaxed<T: EntryDefRegistration>(typed: T) -> ExternResult<H
 pub fn create_link_relaxed<T: Into<LinkTag>>(
    base_address: EntryHash,
    target_address: EntryHash,
+   link_type: LinkType,
    tag: T,
 ) -> ExternResult<HeaderHash> {
    HDK.with(|h| {
       h.borrow().create_link(CreateLinkInput::new(
-         base_address,
-         target_address,
+         base_address.into(),
+         target_address.into(),
+         link_type,
          tag.into(),
          ChainTopOrdering::Relaxed,
       ))
