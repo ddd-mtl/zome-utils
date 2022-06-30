@@ -97,9 +97,12 @@ pub fn get_typed_from_el<T: TryFrom<Entry>>(element: Element) -> ExternResult<T>
 
 /// Get typed Entry and its author from EntryHash
 /// Must be a single author entry type
-pub fn get_typed_and_author<T: TryFrom<Entry>>(eh: &EntryHash)
+pub fn get_typed_and_author<T: TryFrom<Entry>>(ah: &AnyLinkableHash)
    -> ExternResult<(AgentPubKey, T)>
 {
+   let eh = ah.clone().into_entry_hash()
+      .ok_or(WasmError::Guest("Given address is not an entry hash".to_string()))?;
+
    let maybe_maybe_element = get(eh.clone(), GetOptions::latest());
    if let Err(err) = maybe_maybe_element {
       warn!("Failed getting element: {}", err);
