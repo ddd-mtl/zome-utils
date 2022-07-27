@@ -1,18 +1,23 @@
 use hdk::prelude::*;
 
-///
-pub fn create_entry_relaxed<I: EntryDefRegistration, E>(typed: I) -> ExternResult<ActionHash>
+/// Note: same implementation as create_entry() but with Relaxed chain ordering
+pub fn create_entry_relaxed<I: EntryDefRegistration + Clone, E, E2>(typed: I) -> ExternResult<ActionHash>
    where
-      hdk::prelude::Entry: TryFrom<I, Error = E>,
-      <hdk::prelude::Entry as TryFrom<I>>::Error: std::fmt::Debug,
-      hdk::prelude::WasmError: From<E>,
+      ScopedEntryDefIndex: for<'a> TryFrom<&'a I, Error = E2>,
+      EntryVisibility: for<'a> From<&'a I>,
+      Entry: TryFrom<I, Error = E>,
+      WasmError: From<E>,
+      WasmError: From<E2>,
 {
-   let entry = Entry::try_from(typed).unwrap();
-   let visibility = zome_info.entry_defs.
+   let ScopedEntryDefIndex {
+      zome_id,
+      zome_type: entry_def_index,
+   } = (&typed).try_into()?;
+
    let create_input = CreateInput::new(
-      I::entry_def_id(),
-      visibility,
-      entry,
+      EntryDefLocation::app(zome_id, entry_def_index),
+      EntryVisibility::from(&typed),
+      typed.try_into()?, //entry,
       ChainTopOrdering::Relaxed,
    );
    return create(create_input);
