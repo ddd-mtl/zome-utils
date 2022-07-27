@@ -13,7 +13,12 @@ pub fn zome_panic_hook(info: &std::panic::PanicInfo) {
 
 pub fn error<T>(reason: &str) -> ExternResult<T> {
    let msg = format!("{} ; Context: {}", reason, dump_context());
-   Err(WasmError::Guest(msg))
+   let error = WasmError {
+      file: String::new(),
+      line: 0,
+      error: WasmErrorInner::Guest(msg),
+   };
+   Err(error)
 }
 
 
@@ -25,10 +30,16 @@ pub fn invalid(reason: &str) -> ExternResult<ValidateCallbackResult> {
 /// Convert ZomeCallResponse to ExternResult
 pub fn decode_response<T>(response: ZomeCallResponse) -> ExternResult<T>
    where
-      T: for<'de> serde::Deserialize<'de> + std::fmt::Debug
+      //T: for<'de> serde::Deserialize<'de> + std::fmt::Debug,
+      T: serde::de::DeserializeOwned + std::fmt::Debug
 {
    return match response {
-      ZomeCallResponse::Ok(output) => Ok(output.decode()?),
+      ZomeCallResponse::Ok(output) => {
+         let res = output
+            .decode()
+            .map_err(|_| error::<T>("Deserializing response failed").err().unwrap());
+         res
+      },
       ZomeCallResponse::Unauthorized(_, _, _, _) => error("Unauthorized call"),
       ZomeCallResponse::NetworkError(e) => error(&format!("NetworkError: {:?}", e)),
       ZomeCallResponse::CountersigningSession(e) => error(&format!("CountersigningSession: {:?}", e)),
