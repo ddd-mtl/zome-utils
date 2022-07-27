@@ -9,6 +9,7 @@ pub fn create_entry_relaxed<I: EntryDefRegistration + Clone, E, E2>(typed: I) ->
       WasmError: From<E>,
       WasmError: From<E2>,
 {
+   // wtf
    let ScopedEntryDefIndex {
       zome_id,
       zome_type: entry_def_index,

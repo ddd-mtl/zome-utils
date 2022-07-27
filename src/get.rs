@@ -49,19 +49,19 @@ pub fn get_entry_type_from_eh(eh: EntryHash) -> ExternResult<EntryType> {
 
 /// Get EntryHash from a ActionHash
 pub fn get_eh(ah: ActionHash) -> ExternResult<EntryHash> {
-   trace!("hh_to_eh() START - get...");
+   trace!("ah_to_eh() START - get...");
    let maybe_record = get(ah, GetOptions::content())?;
    if let None = maybe_record {
-      warn!("hh_to_eh() END - Record not found");
-      return error("hh_to_eh(): Record not found");
+      warn!("ah_to_eh() END - Record not found");
+      return error("ah_to_eh(): Record not found");
    }
-   trace!("hh_to_eh() END - Record found");
+   trace!("ah_to_eh() END - Record found");
    return record_to_eh(&maybe_record.unwrap());
 }
 
 
 /// Get EntryHash and typed Entry from a ActionHash
-pub fn get_typed_from_hh<T: TryFrom<Entry>>(hash: ActionHash)
+pub fn get_typed_from_ah<T: TryFrom<Entry>>(hash: ActionHash)
    -> ExternResult<(EntryHash, T)>
 {
    match get(hash.clone(), GetOptions::content())? {
@@ -69,7 +69,7 @@ pub fn get_typed_from_hh<T: TryFrom<Entry>>(hash: ActionHash)
          let eh = record.action().entry_hash().expect("Converting ActionHash which does not have an Entry");
          Ok((eh.clone(), get_typed_from_record(record)?))
       }
-      None => error("get_typed_from_hh(): Entry not found"),
+      None => error("get_typed_from_ah(): Entry not found"),
    }
 }
 
