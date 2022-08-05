@@ -4,15 +4,15 @@ use hdk::prelude::*;
 use crate::*;
 
 
-/// Return HeaderHash from SignedHeaderHashed
-pub fn shh_to_hh(shh: element::SignedHeaderHashed) -> HeaderHash {
+/// Return ActionHash from SignedActionHashed
+pub fn shh_to_hh(shh: record::SignedActionHashed) -> ActionHash {
    shh.as_hash().to_owned()
 }
 
 
-/// Return EntryHash for Element
-pub fn el_to_eh(element: &Element) -> ExternResult<EntryHash> {
-   let maybe_eh = element.header().entry_hash();
+/// Return EntryHash for Record
+pub fn el_to_eh(record: &Record) -> ExternResult<EntryHash> {
+   let maybe_eh = record.action().entry_hash();
    if let None = maybe_eh {
       warn!("el_to_eh(): entry_hash not found");
       return error("el_to_eh(): entry_hash not found");
@@ -52,7 +52,7 @@ pub fn is_type(type_candidat: EntryType, zome_name: &str, type_name: &str) -> Ex
       if zome_info.name == zome_name {
          let index = zome_info.entry_defs
                               .entry_def_index_from_id(EntryDefId::App(type_name.to_string()))
-                              .ok_or(WasmError::Guest(String::from("Entry type not found")))
+                              .ok_or(WasmErrorInner::Guest(String::from("Entry type not found")))
             ?;
          return Ok(app_entry_byte.id() == index);
       } else {

@@ -13,7 +13,7 @@ pub fn zome_panic_hook(info: &std::panic::PanicInfo) {
 
 pub fn error<T>(reason: &str) -> ExternResult<T> {
    let msg = format!("{} ; Context: {}", reason, dump_context());
-   Err(WasmError::Guest(msg))
+   Err(wasm_error!(WasmErrorInner::Guest(msg)))
 }
 
 
@@ -28,7 +28,7 @@ pub fn decode_response<T>(response: ZomeCallResponse) -> ExternResult<T>
       T: for<'de> serde::Deserialize<'de> + std::fmt::Debug
 {
    return match response {
-      ZomeCallResponse::Ok(output) => Ok(output.decode()?),
+      ZomeCallResponse::Ok(output) => Ok(output.decode().unwrap()),
       ZomeCallResponse::Unauthorized(_, _, _, _) => error("Unauthorized call"),
       ZomeCallResponse::NetworkError(e) => error(&format!("NetworkError: {:?}", e)),
       ZomeCallResponse::CountersigningSession(e) => error(&format!("CountersigningSession: {:?}", e)),

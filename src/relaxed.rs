@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 
 ///
-pub fn create_entry_relaxed<I: EntryDefRegistration, E>(typed: I) -> ExternResult<HeaderHash>
+pub fn create_entry_relaxed<I: EntryDefRegistration, E>(typed: I) -> ExternResult<ActionHash>
    where
       hdk::prelude::Entry: TryFrom<I, Error = E>,
       <hdk::prelude::Entry as TryFrom<I>>::Error: std::fmt::Debug,
@@ -22,7 +22,7 @@ pub fn create_link_relaxed<T: Into<LinkTag>>(
    target_address: EntryHash,
    link_type: LinkType,
    tag: T,
-) -> ExternResult<HeaderHash> {
+) -> ExternResult<ActionHash> {
    HDK.with(|h| {
       h.borrow().create_link(CreateLinkInput::new(
          base_address.into(),
@@ -36,7 +36,7 @@ pub fn create_link_relaxed<T: Into<LinkTag>>(
 
 
 ///
-pub fn delete_link_relaxed(address: HeaderHash) -> ExternResult<HeaderHash> {
+pub fn delete_link_relaxed(address: ActionHash) -> ExternResult<ActionHash> {
    HDK.with(|h| {
       h.borrow()
        .delete_link(DeleteLinkInput::new(address, ChainTopOrdering::Relaxed))
