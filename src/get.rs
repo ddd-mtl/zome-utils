@@ -162,3 +162,42 @@ pub fn get_latest_typed_from_eh<T: TryFrom<SerializedBytes, Error = SerializedBy
    /// Done
    Ok(Some((typed_entry, ah, eh)))
 }
+
+
+///
+pub fn get_latest_entry(target: EntryHash, option: GetOptions) -> ExternResult<Option<Entry>> {
+   let details = get_details(target, option.clone())?;
+   match details {
+      Some(Details::Entry(EntryDetails { entry, updates, .. })) => {
+         // No updates, we are done
+         if updates.is_empty() {
+            return Ok(Some(entry));
+         }
+         // Get the latest update via timestamp
+         let sah = updates
+            .into_iter()
+            .fold(
+               None,
+               |latest: Option<SignedActionHashed>, update| match latest {
+                  Some(latest) => {
+                     if update.action().timestamp() > latest.action().timestamp() {
+                        Some(update)
+                     } else {
+                        Some(latest)
+                     }
+                  }
+                  None => Some(update),
+               },
+            )
+            .expect("Updates are not empty");
+         match sah.action().entry_hash() {
+            Some(eh) => {
+               let record = get(eh.clone(), GetOptions::content())?.unwrap();
+               return Ok(record.entry.into_option());
+            },
+            None => unreachable!(),
+         }
+      }
+      _ => Ok(None),
+   }
+}
