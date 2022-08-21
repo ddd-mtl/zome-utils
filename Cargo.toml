@@ -1,6 +1,6 @@
 [package]
 name = "zome_utils"
-version = "0.0.122"
+version = "0.0.147"
 edition = "2021"
 
 [lib]
@@ -9,6 +9,5 @@ crate-type = [ "cdylib", "rlib" ]
 
 [dependencies]
 serde = { version = "1.0", default-features = false }
-
-hdk = { version = "=0.0.122", default-features = false }
-holo_hash = { version = "=0.0.19", default-features = false, features = ["encoding"] }
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
+hdk = { version = "=0.0.147", features = ["encoding"] }

@@ -1,17 +1,27 @@
 use hdk::prelude::*;
 
-///
-pub fn create_entry_relaxed<T: EntryDefRegistration>(typed: T) -> ExternResult<HeaderHash>
+/// Note: same implementation as create_entry() but with Relaxed chain ordering
+pub fn create_entry_relaxed<I: EntryDefRegistration + Clone, E, E2>(typed: I) -> ExternResult<ActionHash>
    where
-      hdk::prelude::Entry: TryFrom<T>,
-      <hdk::prelude::Entry as TryFrom<T>>::Error: std::fmt::Debug,
+      ScopedEntryDefIndex: for<'a> TryFrom<&'a I, Error = E2>,
+      EntryVisibility: for<'a> From<&'a I>,
+      Entry: TryFrom<I, Error = E>,
+      WasmError: From<E>,
+      WasmError: From<E2>,
 {
+   // wtf
+   let ScopedEntryDefIndex {
+      zome_id,
+      zome_type: entry_def_index,
+   } = (&typed).try_into()?;
+
    let create_input = CreateInput::new(
-      T::entry_def_id(),
-      Entry::try_from(typed).unwrap(),
+      EntryDefLocation::app(zome_id, entry_def_index),
+      EntryVisibility::from(&typed),
+      typed.try_into()?, //entry,
       ChainTopOrdering::Relaxed,
    );
-   return create_entry(create_input);
+   return create(create_input);
 }
 
 
@@ -19,12 +29,15 @@ pub fn create_entry_relaxed<T: EntryDefRegistration>(typed: T) -> ExternResult<H
 pub fn create_link_relaxed<T: Into<LinkTag>>(
    base_address: EntryHash,
    target_address: EntryHash,
+   link_type: LinkType,
    tag: T,
-) -> ExternResult<HeaderHash> {
+) -> ExternResult<ActionHash> {
    HDK.with(|h| {
       h.borrow().create_link(CreateLinkInput::new(
-         base_address,
-         target_address,
+         base_address.into(),
+         target_address.into(),
+         zome_info()?.id,
+         link_type,
          tag.into(),
          ChainTopOrdering::Relaxed,
       ))
@@ -33,7 +46,7 @@ pub fn create_link_relaxed<T: Into<LinkTag>>(
 
 
 ///
-pub fn delete_link_relaxed(address: HeaderHash) -> ExternResult<HeaderHash> {
+pub fn delete_link_relaxed(address: ActionHash) -> ExternResult<ActionHash> {
    HDK.with(|h| {
       h.borrow()
        .delete_link(DeleteLinkInput::new(address, ChainTopOrdering::Relaxed))
