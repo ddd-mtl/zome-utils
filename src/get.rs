@@ -95,6 +95,26 @@ pub fn get_typed_from_record<T: TryFrom<Entry>>(record: Record) -> ExternResult<
 }
 
 
+/// Get author from AnyLinkableHash
+/// Must be a single author entry type
+pub fn get_author(ah: &AnyLinkableHash)
+   -> ExternResult<AgentPubKey>
+{
+   let maybe_maybe_record = get(ah.clone(), GetOptions::content());
+   if let Err(err) = maybe_maybe_record {
+      warn!("Failed getting Record: {}", err);
+      return Err(err);
+   }
+   let maybe_record = maybe_maybe_record.unwrap();
+   if maybe_record.is_none() {
+      return error("no Record found at address");
+   }
+   let record = maybe_record.unwrap();
+   let author = record.action().author();
+   Ok(author.to_owned())
+}
+
+
 /// Get typed Entry and its author from EntryHash
 /// Must be a single author entry type
 pub fn get_typed_and_author<T: TryFrom<Entry>>(ah: &AnyLinkableHash)
