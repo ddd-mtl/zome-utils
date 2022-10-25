@@ -17,12 +17,12 @@ pub fn get_links_details(links: &mut Vec<Link>, option: GetOptions) -> ExternRes
 
 ///
 pub fn get_typed_from_links<R: TryFrom<Entry>>(
-   base: EntryHash,
+   base: impl Into<AnyLinkableHash>,
    link_type: impl LinkTypeFilterExt,
    tag: Option<LinkTag>,
    //include_latest_updated_entry: bool,
 ) -> ExternResult<Vec<(R, Link)>> {
-   let links = get_links(AnyLinkableHash::from(base), link_type, tag)?;
+   let links = get_links(base, link_type, tag)?;
    //debug!("get_links_and_load_type() links found: {}", links.len());
    let result_pairs = get_links_details(&mut links.clone(), GetOptions::default())?;
    let typed_pairs = result_pairs
