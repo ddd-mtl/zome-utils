@@ -3,6 +3,14 @@
 use hdk::prelude::*;
 use holo_hash::*;
 
+#[macro_export]
+macro_rules! zome_error {
+   ($($arg:tt)*) => {
+      let msg = format!($($arg:tt)*)
+      Err(wasm_error!(WasmErrorInner::Guest(msg)))
+   }
+}
+
 /// Panic hook for zome debugging
 pub fn zome_panic_hook(info: &std::panic::PanicInfo) {
    let mut msg = info.to_string();
