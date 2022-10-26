@@ -6,8 +6,10 @@ use holo_hash::*;
 #[macro_export]
 macro_rules! zome_error {
    ($($arg:tt)*) => {
-      let msg = format!($($arg:tt)*)
-      Err(wasm_error!(WasmErrorInner::Guest(msg)))
+      {
+         let msg = format!($($arg)*);
+         Err(wasm_error!(WasmErrorInner::Guest(msg)))
+      }
    }
 }
 
@@ -45,7 +47,7 @@ pub fn decode_response<T>(response: ZomeCallResponse) -> ExternResult<T>
       ZomeCallResponse::Ok(output) => {
          let res = output
             .decode()
-            .map_err(|_| error::<T>("Deserializing response failed").err().unwrap());
+            .map_err(|_| error::<T>("Deserializing zome call response failed").err().unwrap());
          res
       },
       ZomeCallResponse::Unauthorized(_, _, _, _) => error("Unauthorized call"),
