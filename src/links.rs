@@ -31,12 +31,12 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(
          Some(Details::Entry(EntryDetails { entry, .. })) => {
             match R::try_from(entry.clone()) {
                Ok(r) => Ok((r, pair.1.clone())),
-               Err(_) => error(
+               Err(_) => zome_error!(
                   "Could not convert get_links result to requested type",
                ),
             }
          }
-         _ => error("get_links did not return an app entry"),
+         _ => zome_error!("get_links did not return an app entry"),
       })
       .collect();
    Ok(typed_pairs)

@@ -11,12 +11,12 @@ pub type OptionTypedEntryAndHash<T> = Option<TypedEntryAndHash<T>>;
 //// Get untyped entry from eh
 pub fn get_entry_from_eh(eh: EntryHash) -> ExternResult<Entry> {
    match get(eh, GetOptions::content())? {
-      None => error("get_entry_from_eh(): Entry not found"),
+      None => zome_error!("get_entry_from_eh(): Entry not found"),
       Some(record) => match record.entry() {
          record::RecordEntry::Present(entry) =>  {
             Ok(entry.clone())
          }
-         _ => error("No Entry at Record"),
+         _ => zome_error!("No Entry at Record"),
       }
    }
 }
@@ -40,7 +40,7 @@ pub fn get_entry_type(entry: &Entry) -> ExternResult<EntryType> {
 pub fn get_entry_type_from_eh(eh: EntryHash) -> ExternResult<EntryType> {
    let maybe_record = get(eh, GetOptions::latest())?;
    if maybe_record.is_none() {
-      return error("no record found for entry_hash");
+      return zome_error!("no record found for entry_hash");
    }
    let record = maybe_record.unwrap();
    let entry_type = record.action().entry_type().unwrap().clone();
@@ -53,7 +53,7 @@ pub fn get_eh(ah: ActionHash) -> ExternResult<EntryHash> {
    let maybe_record = get(ah, GetOptions::content())?;
    if let None = maybe_record {
       warn!("ah_to_eh() END - Record not found");
-      return error("ah_to_eh(): Record not found");
+      return zome_error!("ah_to_eh(): Record not found");
    }
    trace!("ah_to_eh() END - Record found");
    return record_to_eh(&maybe_record.unwrap());
@@ -69,7 +69,7 @@ pub fn get_typed_from_ah<T: TryFrom<Entry>>(hash: ActionHash)
          let eh = record.action().entry_hash().expect("Converting ActionHash which does not have an Entry");
          Ok((eh.clone(), get_typed_from_record(record)?))
       }
-      None => error("get_typed_from_ah(): Entry not found"),
+      None => zome_error!("get_typed_from_ah(): Entry not found"),
    }
 }
 
@@ -78,7 +78,7 @@ pub fn get_typed_from_ah<T: TryFrom<Entry>>(hash: ActionHash)
 pub fn get_typed_from_eh<T: TryFrom<Entry>>(eh: EntryHash) -> ExternResult<T> {
    match get(eh, GetOptions::content())? {
       Some(record) => Ok(get_typed_from_record(record)?),
-      None => error("get_typed_from_eh(): Entry not found"),
+      None => zome_error!("get_typed_from_eh(): Entry not found"),
    }
 }
 
@@ -90,7 +90,7 @@ pub fn get_typed_from_record<T: TryFrom<Entry>>(record: Record) -> ExternResult<
          let err = error::<T>(&format!("get_typed_from_record() failed for: {:?}", entry)).err().unwrap();
          res.map_err(|_|err)
       },
-      _ => error("Could not convert record"),
+      _ => zome_error!("Could not convert record"),
    }
 }
 
@@ -107,7 +107,7 @@ pub fn get_author(ah: &AnyLinkableHash)
    }
    let maybe_record = maybe_maybe_record.unwrap();
    if maybe_record.is_none() {
-      return error("no Record found at address");
+      return zome_error!("no Record found at address");
    }
    let record = maybe_record.unwrap();
    let author = record.action().author();
@@ -130,7 +130,7 @@ pub fn get_typed_and_author<T: TryFrom<Entry>>(ah: &AnyLinkableHash)
    }
    let maybe_record = maybe_maybe_record.unwrap();
    if maybe_record.is_none() {
-      return error("no Record found at address");
+      return zome_error!("no Record found at address");
    }
    let record = maybe_record.unwrap();
    let author = record.action().author();

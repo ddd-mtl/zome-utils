@@ -15,7 +15,7 @@ pub fn record_to_eh(record: &Record) -> ExternResult<EntryHash> {
    let maybe_eh = record.action().entry_hash();
    if let None = maybe_eh {
       warn!("record_to_eh(): entry_hash not found");
-      return error("record_to_eh(): entry_hash not found");
+      return zome_error!("record_to_eh(): entry_hash not found");
    }
    Ok(maybe_eh.unwrap().clone())
 }
