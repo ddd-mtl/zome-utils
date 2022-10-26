@@ -2,7 +2,7 @@
 
 use hdk::prelude::*;
 use crate::*;
-
+use crate as zome_utils;
 
 /// Return vec of typed entries of given entry type found in local source chain
 pub fn get_all_typed_local<R: TryFrom<Entry>>(entry_type: EntryType)

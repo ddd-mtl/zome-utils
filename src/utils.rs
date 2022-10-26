@@ -2,7 +2,7 @@
 
 use hdk::prelude::*;
 use crate::*;
-
+use crate as zome_utils;
 
 /// Return ActionHash from SignedActionHashed
 pub fn sah_to_ah(sah: SignedActionHashed) -> ActionHash {

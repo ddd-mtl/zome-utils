@@ -2,6 +2,7 @@
 
 use hdk::prelude::*;
 use crate::*;
+use crate as zome_utils;
 
 /// optimized get details by links
 pub fn get_links_details(links: &mut Vec<Link>, option: GetOptions) -> ExternResult<Vec<(Option<Details>, Link)>> {

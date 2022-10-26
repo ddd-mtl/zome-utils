@@ -3,6 +3,7 @@
 use hdk::prelude::*;
 use std::convert::TryFrom;
 use crate::*;
+use crate as zome_utils;
 
 pub type TypedEntryAndHash<T> = (T, ActionHash, EntryHash);
 pub type OptionTypedEntryAndHash<T> = Option<TypedEntryAndHash<T>>;

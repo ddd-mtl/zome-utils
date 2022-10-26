@@ -3,12 +3,14 @@
 use hdk::prelude::*;
 use holo_hash::*;
 
+use crate as zome_utils;
+
 #[macro_export]
 macro_rules! zome_error {
    ($($arg:tt)*) => {
       {
          let reason = format!($($arg)*);
-         let msg = format!("{} ; Context: {}", reason, dump_context());
+         let msg = format!("{} ; Context: {}", reason, zome_utils::dump_context());
          Err(wasm_error!(WasmErrorInner::Guest(msg)))
       }
    }
