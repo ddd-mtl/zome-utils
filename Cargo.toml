@@ -1,6 +1,7 @@
 [package]
 name = "zome_utils"
 version = "0.0.154"
+rust-version = "1.65.0"
 edition = "2021"
 
 [lib]
