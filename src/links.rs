@@ -24,17 +24,16 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(
    //include_latest_updated_entry: bool,
 ) -> ExternResult<Vec<(R, Link)>> {
    let links = get_links(base, link_type, tag)?;
-   //debug!("get_links_and_load_type() links found: {}", links.len());
+   debug!("get_links_and_load_type() links found: {}", links.len());
    let result_pairs = get_links_details(&mut links.clone(), GetOptions::default())?;
+   debug!("get_links_and_load_type() result_pairs: {}", result_pairs.len());
    let typed_pairs = result_pairs
       .iter()
       .flat_map(|pair| match pair.0.clone() {
          Some(Details::Entry(EntryDetails { entry, .. })) => {
             match R::try_from(entry.clone()) {
                Ok(r) => Ok((r, pair.1.clone())),
-               Err(_) => zome_error!(
-                  "Could not convert get_links result to requested type",
-               ),
+               Err(_) => zome_error!("Could not convert get_links result to requested type"),
             }
          }
          _ => zome_error!("get_links did not return an app entry"),
