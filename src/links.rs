@@ -9,9 +9,11 @@ pub fn get_links_details(links: &mut Vec<Link>, option: GetOptions) -> ExternRes
       .into_iter()
       .map(|link| GetInput::new(link.target.clone().into(), option.clone()))
       .collect();
+   debug!("get_links_details() get_inputs: {:?}", get_inputs);
    let details = HDK.with(|hdk| hdk.borrow().get_details(get_inputs))?;
    assert!(details.len() == links.len());
-   let pairs = details.iter().map(|x|  (x.clone(), links.pop().unwrap())).collect();
+   let pairs = details.into_iter().map(|x|  (x, links.pop().unwrap())).collect();
+   debug!("get_links_details() pairs: {:?}", pairs);
    Ok(pairs)
 }
 
@@ -30,6 +32,7 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(
    let mut typed_pairs: Vec<(R, Link)> = Vec::new();
    for pair in result_pairs {
       let Some(details) = pair.0.clone() else {
+         debug!("get_links_and_load_type() details is None");
          continue;
       };
       let typed = match details {
