@@ -1,7 +1,6 @@
 //! All helper functions calling `get_links()`
 
 use hdk::prelude::*;
-use crate::*;
 use crate as zome_utils;
 
 /// optimized get details by links
@@ -16,6 +15,7 @@ pub fn get_links_details(links: &mut Vec<Link>, option: GetOptions) -> ExternRes
    Ok(pairs)
 }
 
+
 ///
 pub fn get_typed_from_links<R: TryFrom<Entry>>(
    base: impl Into<AnyLinkableHash>,
@@ -27,17 +27,23 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(
    debug!("get_links_and_load_type() links found: {}", links.len());
    let result_pairs = get_links_details(&mut links.clone(), GetOptions::default())?;
    debug!("get_links_and_load_type() result_pairs: {}", result_pairs.len());
-   let typed_pairs = result_pairs
-      .iter()
-      .flat_map(|pair| match pair.0.clone() {
-         Some(Details::Entry(EntryDetails { entry, .. })) => {
-            match R::try_from(entry.clone()) {
-               Ok(r) => Ok((r, pair.1.clone())),
-               Err(_) => zome_error!("Could not convert get_links result to requested type"),
-            }
+   let mut typed_pairs: Vec<(R, Link)> = Vec::new();
+   for pair in result_pairs {
+      let Some(details) = pair.0.clone() else {
+         continue;
+      };
+      let typed = match details {
+         Details::Entry(EntryDetails { entry, .. }) => {
+            let Ok(r) = R::try_from(entry.clone()) else {continue};
+            r
          }
-         _ => zome_error!("get_links did not return an app entry"),
-      })
-      .collect();
+         Details::Record(RecordDetails { record, .. }) => {
+            let Ok(r) = zome_utils::get_typed_from_record::<R>(record) else {continue};
+            r
+         }
+      };
+      typed_pairs.push((typed, pair.1.clone()));
+   }
+   debug!("get_links_and_load_type() typed_pairs: {}", typed_pairs.len());
    Ok(typed_pairs)
 }
