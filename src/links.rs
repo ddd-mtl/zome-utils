@@ -1,21 +1,34 @@
 //! All helper functions calling `get_links()`
 
 use hdk::prelude::*;
+use hdk::prelude::holo_hash::hash_type::AnyLinkable;
 use crate as zome_utils;
 
-/// optimized get details by links
-pub fn get_links_details(links: &mut Vec<Link>, option: GetOptions) -> ExternResult<Vec<(Option<Details>, Link)>> {
-   let get_inputs: Vec<GetInput> = links
-      .into_iter()
-      .map(|link| GetInput::new(link.target.clone().into(), option.clone()))
-      .collect();
-   debug!("get_links_details() get_inputs: {:?}", get_inputs);
-   let details = HDK.with(|hdk| hdk.borrow().get_details(get_inputs))?;
-   assert!(details.len() == links.len());
-   let pairs = details.into_iter().map(|x|  (x, links.pop().unwrap())).collect();
-   debug!("get_links_details() pairs: {:?}", pairs);
-   Ok(pairs)
+
+#[allow(non_snake_case)]
+fn links_to_GetInputs(links: Vec<Link>) -> Vec<(GetInput, Link)> {
+   let mut get_inputs: Vec<(GetInput, Link)> = Vec::new();
+   for link in links.into_iter() {
+      let input = match link.target.hash_type() {
+         AnyLinkable::Entry => GetInput::new(link.target.clone().into(), GetOptions::content()),
+         AnyLinkable::Action => GetInput::new(link.target.clone().into(), GetOptions::latest()),
+         AnyLinkable::External => continue,
+      };
+      get_inputs.push((input, link));
+   }
+   get_inputs
 }
+
+
+// /// optimized get details by links
+// pub fn get_links_details(links: &mut Vec<Link>) -> ExternResult<Vec<(Option<Details>, Link)>> {
+//    let get_inputs = links_to_GetInputs(links)?;
+//    debug!("get_links_details() get_inputs: {:?}", get_inputs);
+//    let details = HDK.with(|hdk| hdk.borrow().get_details(get_inputs))?;
+//    let pairs = details.into_iter().map(|x|  (x, links.pop().unwrap())).collect();
+//    debug!("get_links_details() pairs: {:?}", pairs);
+//    Ok(pairs)
+// }
 
 
 ///
@@ -26,27 +39,16 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(
    //include_latest_updated_entry: bool,
 ) -> ExternResult<Vec<(R, Link)>> {
    let links = get_links(base, link_type, tag)?;
-   debug!("get_links_and_load_type() links found: {}", links.len());
-   let result_pairs = get_links_details(&mut links.clone(), GetOptions::default())?;
-   debug!("get_links_and_load_type() result_pairs: {}", result_pairs.len());
+   debug!("get_typed_from_links() links found: {}", links.len());
+   let input_pairs = links_to_GetInputs(links);
+   debug!("get_typed_from_links() input_pairs: {}", input_pairs.len());
    let mut typed_pairs: Vec<(R, Link)> = Vec::new();
-   for pair in result_pairs {
-      let Some(details) = pair.0.clone() else {
-         debug!("get_links_and_load_type() details is None");
-         continue;
-      };
-      let typed = match details {
-         Details::Entry(EntryDetails { entry, .. }) => {
-            let Ok(r) = R::try_from(entry.clone()) else {continue};
-            r
-         }
-         Details::Record(RecordDetails { record, .. }) => {
-            let Ok(r) = zome_utils::get_typed_from_record::<R>(record) else {continue};
-            r
-         }
-      };
-      typed_pairs.push((typed, pair.1.clone()));
+   for pair in input_pairs.into_iter() {
+      let Some(record) = get(pair.0.any_dht_hash, pair.0.get_options)? else {continue};
+      debug!("get_typed_from_links() record: {:?}", record);
+      let Ok(r) = zome_utils::get_typed_from_record::<R>(record) else {continue};
+      typed_pairs.push((r, pair.1.clone()));
    }
-   debug!("get_links_and_load_type() typed_pairs: {}", typed_pairs.len());
+   debug!("get_typed_from_links() typed_pairs: {}", typed_pairs.len());
    Ok(typed_pairs)
 }
