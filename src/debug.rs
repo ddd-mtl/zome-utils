@@ -82,7 +82,7 @@ pub fn decode_response<T>(response: ZomeCallResponse) -> ExternResult<T>
       ZomeCallResponse::Ok(output) => {
          let res = output
             .decode()
-            .map_err(|_| error::<T>("Deserializing zome call response failed").err().unwrap());
+            .map_err(|_| error::<T>("Deserializing response output failed").err().unwrap());
          res
       },
       ZomeCallResponse::Unauthorized(_, _, _, _) => zome_error!("Unauthorized call"),

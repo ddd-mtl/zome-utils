@@ -2,6 +2,8 @@
 
 use hdk::prelude::*;
 use crate as zome_utils;
+use crate::zome_error;
+
 
 /// Remote call to self
 pub fn call_self<I>(fn_name: &str, payload: I) -> ExternResult<ZomeCallResponse>
@@ -34,8 +36,11 @@ pub fn call_self_cell<I, O>(zome_name: &str, fn_name: &str, payload: I) -> Exter
       None,
       payload,
    )?;
-   debug!("call_self_cell() response for {}(): {:?}", fn_name, res);
-   let output: O = zome_utils::decode_response(res)?;
-   debug!("call_self_cell() decoded response for {}(): {:?}", fn_name, output);
-   Ok(output)
+   debug!("call_self_cell() response for {fn_name}(): {:?}", res);
+   let output: ExternResult<O> = zome_utils::decode_response(res);
+   debug!("call_self_cell() decoded response for {fn_name}(): {:?}", output);
+   if let Err(e) = output {
+      return zome_error!("Decoding zome call response from {fn_name}() failed: {}", e);
+   }
+   output
 }
