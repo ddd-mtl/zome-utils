@@ -25,7 +25,7 @@ pub fn call_self_cell<I, O>(zome_name: &str, fn_name: &str, payload: I) -> Exter
       I: serde::Serialize + std::fmt::Debug,
       O: serde::de::DeserializeOwned + std::fmt::Debug
 {
-   trace!("call_self_cell() - {}()", fn_name);
+   debug!("call_self_cell() - {}()", fn_name);
    // TODO check fn_name exists?
    let res = call(
       CallTargetCell::Local,
@@ -34,7 +34,7 @@ pub fn call_self_cell<I, O>(zome_name: &str, fn_name: &str, payload: I) -> Exter
       None,
       payload,
    )?;
-   trace!("call_self_cell() response for {}(): {:?}", fn_name, res);
+   debug!("call_self_cell() response for {}(): {:?}", fn_name, res);
    let output: O = zome_utils::decode_response(res)?;
    Ok(output)
 }
