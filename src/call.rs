@@ -36,5 +36,6 @@ pub fn call_self_cell<I, O>(zome_name: &str, fn_name: &str, payload: I) -> Exter
    )?;
    debug!("call_self_cell() response for {}(): {:?}", fn_name, res);
    let output: O = zome_utils::decode_response(res)?;
+   debug!("call_self_cell() decoded response for {}(): {:?}", fn_name, output);
    Ok(output)
 }
