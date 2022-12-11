@@ -10,8 +10,8 @@ fn links_to_GetInputs(links: Vec<Link>) -> Vec<(GetInput, Link)> {
    let mut get_inputs: Vec<(GetInput, Link)> = Vec::new();
    for link in links.into_iter() {
       let input = match link.target.hash_type() {
-         AnyLinkable::Entry => GetInput::new(link.target.clone().into(), GetOptions::content()),
-         AnyLinkable::Action => GetInput::new(link.target.clone().into(), GetOptions::latest()),
+         AnyLinkable::Entry => GetInput::new(link.target.clone().into_entry_hash().unwrap().into(), GetOptions::content()),
+         AnyLinkable::Action => GetInput::new(link.target.clone().into_action_hash().unwrap().into(), GetOptions::latest()),
          AnyLinkable::External => continue,
       };
       get_inputs.push((input, link));

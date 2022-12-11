@@ -96,8 +96,8 @@ pub fn get_typed_from_record<T: TryFrom<Entry>>(record: Record) -> ExternResult<
 
 /// Get author from AnyLinkableHash
 /// Must be a single author entry type
-pub fn get_author(any_hash: &AnyLinkableHash) -> ExternResult<AgentPubKey> {
-   let maybe_maybe_record = get(any_hash.clone(), GetOptions::content());
+pub fn get_author(dht_hash: &AnyDhtHash) -> ExternResult<AgentPubKey> {
+   let maybe_maybe_record = get(dht_hash.clone(), GetOptions::content());
    if let Err(err) = maybe_maybe_record {
       warn!("Failed getting Record: {}", err);
       return Err(err);
