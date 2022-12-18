@@ -85,7 +85,7 @@ pub fn decode_response<T>(response: ZomeCallResponse) -> ExternResult<T>
             .map_err(|_| error::<T>("Deserializing response output failed").err().unwrap());
          res
       },
-      ZomeCallResponse::Unauthorized(_, _, _, _) => zome_error!("Unauthorized call"),
+      ZomeCallResponse::Unauthorized(_, _, _, _, _) => zome_error!("Unauthorized call"),
       ZomeCallResponse::NetworkError(e) => zome_error!("NetworkError: {:?}", e),
       ZomeCallResponse::CountersigningSession(e) => zome_error!("CountersigningSession: {:?}", e),
    };
