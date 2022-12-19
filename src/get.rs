@@ -118,7 +118,7 @@ pub fn get_typed_and_author<T: TryFrom<Entry>>(any_hash: &AnyLinkableHash)
    let Some(eh) = any_hash.clone().into_entry_hash() else {
       return zome_error!("Given address is not an entry hash");
    };
-   let maybe_maybe_record = get(eh.clone(), GetOptions::latest());
+   let maybe_maybe_record = get(eh.clone(), GetOptions::content());
    if let Err(err) = maybe_maybe_record {
       warn!("Failed getting Record: {}", err);
       return Err(err);
