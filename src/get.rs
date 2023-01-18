@@ -94,7 +94,7 @@ pub fn get_typed_from_record<T: TryFrom<Entry>>(record: Record) -> ExternResult<
 }
 
 
-/// Get author from AnyLinkableHash
+/// Get author from AnyDhtHash
 /// Must be a single author entry type
 pub fn get_author(dht_hash: &AnyDhtHash) -> ExternResult<AgentPubKey> {
    let maybe_maybe_record = get(dht_hash.clone(), GetOptions::content());
@@ -110,15 +110,13 @@ pub fn get_author(dht_hash: &AnyDhtHash) -> ExternResult<AgentPubKey> {
 }
 
 
-/// Get typed Entry and its author from EntryHash
+/// Get typed Entry and its author from AnyLinkableHash
 /// Must be a single author entry type
 pub fn get_typed_and_author<T: TryFrom<Entry>>(any_hash: &AnyLinkableHash)
    -> ExternResult<(AgentPubKey, T)>
 {
-   let Some(eh) = any_hash.clone().into_entry_hash() else {
-      return zome_error!("Given address is not an entry hash");
-   };
-   let maybe_maybe_record = get(eh.clone(), GetOptions::content());
+   let dh = into_dht_hash(any_hash.to_owned())?;
+   let maybe_maybe_record = get(dh, GetOptions::content());
    if let Err(err) = maybe_maybe_record {
       warn!("Failed getting Record: {}", err);
       return Err(err);

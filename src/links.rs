@@ -1,8 +1,18 @@
 //! All helper functions calling `get_links()`
 
 use hdk::prelude::*;
+use hdk::prelude::holo_hash::AnyLinkableHashPrimitive;
 use hdk::prelude::holo_hash::hash_type::AnyLinkable;
 use crate as zome_utils;
+
+
+pub fn into_dht_hash(yh: AnyLinkableHash) -> ExternResult<AnyDhtHash> {
+   match yh.into_primitive() {
+      AnyLinkableHashPrimitive::Entry(eh) => Ok(AnyDhtHash::from(eh)),
+      AnyLinkableHashPrimitive::Action(ah) => Ok(AnyDhtHash::from(ah)),
+      AnyLinkableHashPrimitive::External(_xh) => zome_utils::zome_error!("AnyDhtHash is of an external link type"),
+   }
+}
 
 
 #[allow(non_snake_case)]
