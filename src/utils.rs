@@ -28,6 +28,19 @@ pub fn now() -> u64 {
 }
 
 
+/// Get EntryDefIndex from a unit_enum
+pub fn get_variant_index<T: UnitEnum>(unknown: T::Unit) -> ExternResult<u8> {
+   let mut i = 0;
+   for variant in T::unit_iter() {
+      //debug!("get_variant_index() variant = {:?}", variant);
+      if variant == unknown {
+         return Ok(i);
+      }
+      i += 1;
+   }
+   return Err(wasm_error!(WasmErrorInner::Guest("Unknown variant".to_string())));
+}
+
 
 
 // pub fn app_type_to_location(app_type: AppEntryType) -> AppEntryLocation {
