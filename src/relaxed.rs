@@ -11,12 +11,12 @@ pub fn create_entry_relaxed<I: EntryDefRegistration + Clone, E, E2>(typed: I) ->
 {
    // wtf
    let ScopedEntryDefIndex {
-      zome_id,
+      zome_index,
       zome_type: entry_def_index,
    } = (&typed).try_into()?;
 
    let create_input = CreateInput::new(
-      EntryDefLocation::app(zome_id, entry_def_index),
+      EntryDefLocation::app(zome_index, entry_def_index),
       EntryVisibility::from(&typed),
       typed.try_into()?, //entry,
       ChainTopOrdering::Relaxed,

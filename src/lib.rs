@@ -6,6 +6,7 @@ mod links;
 mod query;
 mod utils;
 mod relaxed;
+mod call;
 
 
 pub use debug::*;
@@ -14,6 +15,8 @@ pub use links::*;
 pub use query::*;
 pub use utils::*;
 pub use relaxed::*;
+pub use call::*;
+
 
 //----------------------------------------------------------------------------------------
 
@@ -26,4 +29,13 @@ macro_rules! return_none {
         }
     }
 }
+
+
+// #[macro_export]
+// macro_rules! else_none {
+//         ( $e:expr ) => {
+//             $e else {return Ok(None)};
+//         }
+// }
+
 

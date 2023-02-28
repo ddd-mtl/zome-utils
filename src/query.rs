@@ -2,7 +2,7 @@
 
 use hdk::prelude::*;
 use crate::*;
-
+use crate as zome_utils;
 
 /// Return vec of typed entries of given entry type found in local source chain
 pub fn get_all_typed_local<R: TryFrom<Entry>>(entry_type: EntryType)
@@ -34,7 +34,7 @@ pub fn get_local_from_eh(eh: EntryHash) -> ExternResult<Record> {
       .entry_hashes(set);
    let vec = query(query_args)?;
    if vec.len() != 1 {
-      return error("Record not found at given EntryHash");
+      return zome_error!("Record not found at given EntryHash");
    }
    Ok(vec[0].clone())
 }
@@ -46,7 +46,7 @@ pub fn get_local_from_ah(ah: ActionHash) -> ExternResult<Record> {
       .include_entries(true);
    let maybe_vec = query(query_args);
    if let Err(err) = maybe_vec {
-      return error(&format!("{:?}",err));
+      return zome_error!("{:?}",err);
    }
    let vec = maybe_vec.unwrap();
    for record in vec {
@@ -54,5 +54,5 @@ pub fn get_local_from_ah(ah: ActionHash) -> ExternResult<Record> {
          return Ok(record.clone());
       }
    }
-   return error("Record not found at given ActionHash");
+   return zome_error!("Record not found at given ActionHash");
 }

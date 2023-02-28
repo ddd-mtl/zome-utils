@@ -2,7 +2,7 @@
 
 use hdk::prelude::*;
 use crate::*;
-
+use crate as zome_utils;
 
 /// Return ActionHash from SignedActionHashed
 pub fn sah_to_ah(sah: SignedActionHashed) -> ActionHash {
@@ -13,9 +13,9 @@ pub fn sah_to_ah(sah: SignedActionHashed) -> ActionHash {
 /// Return EntryHash for Record
 pub fn record_to_eh(record: &Record) -> ExternResult<EntryHash> {
    let maybe_eh = record.action().entry_hash();
-   if let None = maybe_eh {
+   if maybe_eh.is_none() {
       warn!("record_to_eh(): entry_hash not found");
-      return error("record_to_eh(): entry_hash not found");
+      return zome_error!("record_to_eh(): entry_hash not found");
    }
    Ok(maybe_eh.unwrap().clone())
 }
@@ -28,19 +28,19 @@ pub fn now() -> u64 {
 }
 
 
-/// Remote call to self
-pub fn call_self<I>(fn_name: &str, payload: I) -> ExternResult<ZomeCallResponse>
-   where
-      I: serde::Serialize + std::fmt::Debug
-{
-   call_remote(
-      agent_info()?.agent_latest_pubkey,
-      zome_info()?.name,
-      fn_name.to_string().into(),
-      None,
-      payload,
-   )
+/// Get EntryDefIndex from a unit_enum
+pub fn get_variant_index<T: UnitEnum>(unknown: T::Unit) -> ExternResult<u8> {
+   let mut i = 0;
+   for variant in T::unit_iter() {
+      //debug!("get_variant_index() variant = {:?}", variant);
+      if variant == unknown {
+         return Ok(i);
+      }
+      i += 1;
+   }
+   return Err(wasm_error!(WasmErrorInner::Guest("Unknown variant".to_string())));
 }
+
 
 
 // pub fn app_type_to_location(app_type: AppEntryType) -> AppEntryLocation {
