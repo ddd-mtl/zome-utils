@@ -6,7 +6,7 @@ use crate as zome_utils;
 
 /// Return vec of typed entries of given entry type found in local source chain
 pub fn get_all_typed_local<R: TryFrom<Entry>>(entry_type: EntryType)
-   -> ExternResult<Vec<(Create, R)>>
+   -> ExternResult<Vec<(ActionHash, Create, R)>>
 {
    /// Query type
    let query_args = ChainQueryFilter::default()
@@ -20,7 +20,7 @@ pub fn get_all_typed_local<R: TryFrom<Entry>>(entry_type: EntryType)
       let typed: R = get_typed_from_record(record.clone())?;
       let Action::Create(create) = record.action()
          else { panic!("Should be a create Action")};
-      typeds.push((create.clone(), typed))
+      typeds.push((record.action_address().to_owned(), create.clone(), typed))
    }
    /// Done
    Ok(typeds)
