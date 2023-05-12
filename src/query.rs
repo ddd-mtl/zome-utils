@@ -6,7 +6,7 @@ use crate as zome_utils;
 
 /// Return vec of typed entries of given entry type found in local source chain
 pub fn get_all_typed_local<R: TryFrom<Entry>>(entry_type: EntryType)
-   -> ExternResult<Vec<R>>
+   -> ExternResult<Vec<(Record, R)>>
 {
    /// Query type
    let query_args = ChainQueryFilter::default()
@@ -18,7 +18,7 @@ pub fn get_all_typed_local<R: TryFrom<Entry>>(entry_type: EntryType)
    let mut typeds = Vec::new();
    for record in records {
       let typed: R = get_typed_from_record(record.clone())?;
-      typeds.push(typed)
+      typeds.push((record.clone(), typed))
    }
    /// Done
    Ok(typeds)
