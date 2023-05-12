@@ -110,6 +110,25 @@ pub fn get_author(dht_hash: &AnyDhtHash) -> ExternResult<AgentPubKey> {
 }
 
 
+/// Get typed Entry from AnyLinkableHash
+/// Must be a single author entry type
+pub fn get_typed_and_record<T: TryFrom<Entry>>(any_hash: &AnyLinkableHash)
+   -> ExternResult<(Record, T)>
+{
+   let dh = into_dht_hash(any_hash.to_owned())?;
+   let maybe_maybe_record = get(dh, GetOptions::content());
+   if let Err(err) = maybe_maybe_record {
+      warn!("Failed getting Record: {}", err);
+      return Err(err);
+   }
+   let Some(record) = maybe_maybe_record.unwrap() else {
+      return zome_error!("no Record found at address");
+   };
+   let app_entry = get_typed_from_record::<T>(record.clone())?;
+   Ok((record, app_entry))
+}
+
+
 /// Get typed Entry and its author from AnyLinkableHash
 /// Must be a single author entry type
 pub fn get_typed_and_author<T: TryFrom<Entry>>(any_hash: &AnyLinkableHash)

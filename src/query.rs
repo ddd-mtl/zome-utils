@@ -58,3 +58,4 @@ pub fn get_local_from_ah(ah: ActionHash) -> ExternResult<Record> {
    }
    return zome_error!("Record not found at given ActionHash");
 }
+
