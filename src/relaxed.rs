@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 
 /// Note: same implementation as create_entry() but with Relaxed chain ordering
-pub fn create_entry_relaxed<I: EntryDefRegistration + Clone, E, E2>(typed: I) -> ExternResult<ActionHash>
+pub fn create_entry_relaxed<I, E, E2>(typed: I) -> ExternResult<ActionHash>
    where
       ScopedEntryDefIndex: for<'a> TryFrom<&'a I, Error = E2>,
       EntryVisibility: for<'a> From<&'a I>,
