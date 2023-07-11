@@ -38,14 +38,23 @@ pub fn get_variant_index<T: UnitEnum>(unknown: T::Unit) -> ExternResult<u8> {
       }
       i += 1;
    }
-   return Err(wasm_error!(WasmErrorInner::Guest("Unknown variant".to_string())));
+   return zome_error!("Unknown variant");
 }
 
 
+///
+pub fn get_zome_index(candidat: ZomeName) -> ExternResult<u8> {
+   let mut i = 0;
+   for zome_name in dna_info()?.zome_names {
+      //debug!("get_variant_index() variant = {:?}", variant);
+      if zome_name == candidat {
+         return Ok(i);
+      }
+      i += 1;
+   }
+   return zome_error!("Unknown Zome");
+}
 
-// pub fn app_type_to_location(app_type: AppEntryType) -> AppEntryLocation {
-//
-// }
 
 
 //
