@@ -82,17 +82,17 @@ pub fn get_typed_from_actions_links<T: TryFrom<Entry>>(
    link_type: impl LinkTypeFilterExt,
    tag: Option<LinkTag>,
    //include_latest_updated_entry: bool,
-) -> ExternResult<Vec<(AgentPubKey, T)>> {
+) -> ExternResult<Vec<(ActionHash, AgentPubKey, T)>> {
    let links = get_links(base, link_type, tag)?;
    //debug!("get_typed_from_actions_links() links found: {}", links.len());
    let input_pairs = links_to_GetInputs(links, Some(AnyLinkable::Action));
    //debug!("get_typed_from_actions_links() input_pairs: {}", input_pairs.len());
-   let mut typed_pairs: Vec<(AgentPubKey, T)> = Vec::new();
-   for pair in input_pairs.into_iter() {
-      let Ok(p) = zome_utils::get_typed_and_author::<T>(&pair.1.target) 
+   let mut tuples: Vec<(ActionHash, AgentPubKey, T)> = Vec::new();
+   for (_input, link) in input_pairs.into_iter() {
+      let Ok(p) = zome_utils::get_typed_and_author::<T>(&link.target)
          else {continue};
-      typed_pairs.push(p);
+      tuples.push((link.create_link_hash, p.0, p.1));
    }
    //debug!("get_typed_from_actions_links() typed_pairs: {}", typed_pairs.len());
-   Ok(typed_pairs)
+   Ok(tuples)
 }
