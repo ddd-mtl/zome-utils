@@ -76,22 +76,22 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(
 }
 
 
-///
+/// Returns Vec of: CreateLinkHash, LinkTarget, LinkAuthor, TypedEntry
 pub fn get_typed_from_actions_links<T: TryFrom<Entry>>(
    base: impl Into<AnyLinkableHash>,
    link_type: impl LinkTypeFilterExt,
    tag: Option<LinkTag>,
    //include_latest_updated_entry: bool,
-) -> ExternResult<Vec<(ActionHash, AgentPubKey, T)>> {
+) -> ExternResult<Vec<(ActionHash, AnyLinkableHash, AgentPubKey, T)>> {
    let links = get_links(base, link_type, tag)?;
    //debug!("get_typed_from_actions_links() links found: {}", links.len());
    let input_pairs = links_to_GetInputs(links, Some(AnyLinkable::Action));
    //debug!("get_typed_from_actions_links() input_pairs: {}", input_pairs.len());
-   let mut tuples: Vec<(ActionHash, AgentPubKey, T)> = Vec::new();
+   let mut tuples: Vec<(ActionHash, AnyLinkableHash, AgentPubKey, T)> = Vec::new();
    for (_input, link) in input_pairs.into_iter() {
       let Ok(p) = zome_utils::get_typed_and_author::<T>(&link.target)
          else {continue};
-      tuples.push((link.create_link_hash, p.0, p.1));
+      tuples.push((link.create_link_hash, link.target, p.0, p.1));
    }
    //debug!("get_typed_from_actions_links() typed_pairs: {}", typed_pairs.len());
    Ok(tuples)
