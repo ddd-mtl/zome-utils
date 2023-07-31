@@ -14,7 +14,7 @@ pub fn get_entry_from_eh(eh: EntryHash) -> ExternResult<Entry> {
    match get(eh, GetOptions::content())? {
       None => zome_error!("get_entry_from_eh(): Entry not found"),
       Some(record) => match record.entry() {
-         record::RecordEntry::Present(entry) =>  {
+         RecordEntry::Present(entry) =>  {
             Ok(entry.clone())
          }
          _ => zome_error!("No Entry at Record"),
@@ -85,7 +85,7 @@ pub fn get_typed_from_eh<T: TryFrom<Entry>>(eh: EntryHash) -> ExternResult<T> {
 
 /// Get typed Entry from Record
 pub fn get_typed_from_record<T: TryFrom<Entry>>(record: Record) -> ExternResult<T> {
-   let record::RecordEntry::Present(entry) = record.entry() else {
+   let RecordEntry::Present(entry) = record.entry() else {
       return zome_error!("Could not convert record");
    };
    let res = T::try_from(entry.clone());
