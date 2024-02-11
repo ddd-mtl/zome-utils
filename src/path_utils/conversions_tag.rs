@@ -40,7 +40,7 @@ pub fn tag2hash<T: HashType>(tag: &LinkTag) -> ExternResult<HoloHash<T>> {
 
 
 /// Convert the i64 timestamp stored in the tag as Vec<u8>
-fn tag2Ts(tag: LinkTag) -> Timestamp {
+pub fn tag2Ts(tag: LinkTag) -> Timestamp {
   let bytes: [u8;8] = tag.0.try_into().unwrap();
   let ts = i64::from_le_bytes(bytes);
   return Timestamp::from_micros(ts);
