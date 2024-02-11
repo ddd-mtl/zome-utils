@@ -1,4 +1,4 @@
-use std::convert::Infallible;
+//use std::convert::Infallible;
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::{HashType, holo_hash_decode_unchecked, holo_hash_encode};
 
@@ -55,26 +55,11 @@ pub fn ts2Tag(ts: Timestamp) -> LinkTag {
 
 
 ///
-pub fn obj2Tag<T: Into<hdk::prelude::SerializedBytes>>(obj: T) -> ExternResult<LinkTag> {
-  let sb = SerializedBytes::try_from(obj)?;
-  Ok(LinkTag::new(sb.bytes().to_owned()))
+pub fn obj2Tag<T: serde::Serialize + std::fmt::Debug + Clone>(obj: T) -> ExternResult<LinkTag> {
+  let data = encode(&obj)
+     .map_err(|e|wasm_error!(SerializedBytesError::Serialize(e.to_string())))?;
+  Ok(LinkTag::new(data))
 }
-
-
-///
-pub fn tag2Obj<T: From<hdk::prelude::SerializedBytes>>(tag: LinkTag) -> ExternResult<T> {
-  let res = SerializedBytes::from(UnsafeBytes::from(tag.0)).try_into()
-                                                           .map_err(|e: Infallible| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-  Ok(res)
-}
-
-
-// ///
-// pub fn obj2Tag<T: serde::Serialize + std::fmt::Debug + Clone>(obj: T) -> ExternResult<LinkTag> {
-//   let data = encode(&obj)
-//      .map_err(|e|wasm_error!(SerializedBytesError::Serialize(e.to_string())))?;
-//   Ok(LinkTag::new(data))
-// }
 
 
 // ///
@@ -84,4 +69,18 @@ pub fn tag2Obj<T: From<hdk::prelude::SerializedBytes>>(tag: LinkTag) -> ExternRe
 //   Ok(data)
 // }
 
+
+// ///
+// pub fn obj2Tag<T: Into<hdk::prelude::SerializedBytes>>(obj: T) -> ExternResult<LinkTag> {
+//   let sb = SerializedBytes::try_from(obj)?;
+//   Ok(LinkTag::new(sb.bytes().to_owned()))
+// }
+//
+//
+// ///
+// pub fn tag2Obj<T: From<hdk::prelude::SerializedBytes>>(tag: LinkTag) -> ExternResult<T> {
+//   let res = SerializedBytes::from(UnsafeBytes::from(tag.0)).try_into()
+//                                                            .map_err(|e: Infallible| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
+//   Ok(res)
+// }
 
