@@ -85,7 +85,7 @@ pub fn get_data_type(hash: AnyLinkableHash) -> ExternResult<String> {
 
 
 ///
-pub fn get_app_entry_name(dh: AnyDhtHash) -> ExternResult<(AppEntryName, Record)> {
+pub fn get_app_entry_name(dh: AnyDhtHash, maybe_role: Option<String>) -> ExternResult<(AppEntryName, Record)> {
    /// Grab Entry
    let maybe_maybe_record = get(dh.clone(), GetOptions::content());
    if let Err(err) = maybe_maybe_record {
@@ -103,22 +103,23 @@ pub fn get_app_entry_name(dh: AnyDhtHash) -> ExternResult<(AppEntryName, Record)
    let EntryType::App(app_entry_def) = entry_type else {
       return error("no AppEntry found at address");
    };
-   let aen = get_app_entry_name_from_def(app_entry_def)?;
+   let aen = get_app_entry_name_from_def(app_entry_def, maybe_role)?;
 
    Ok((aen, record))
 }
 
 
 ///
-pub fn get_app_entry_name_from_def(app_entry_def: AppEntryDef) -> ExternResult<AppEntryName> {
+pub fn get_app_entry_name_from_def(app_entry_def: AppEntryDef, maybe_role: Option<String>) -> ExternResult<AppEntryName> {
    /// Grab zome
    let dna = dna_info()?;
    let this_zome_info = zome_info()?;
    let mut entry_defs: EntryDefs = this_zome_info.entry_defs;
    /// Grab entry_def from different zome
    if this_zome_info.id != app_entry_def.zome_index {
+      let target = if let Some(role) = maybe_role { CallTargetCell::OtherRole(role) } else { CallTargetCell::Local };
       let zome_name = dna.zome_names[app_entry_def.zome_index.0 as usize].clone();
-      let response = call(CallTargetCell::Local, zome_name, "entry_defs".into(), None, ())?;
+      let response = call(target, zome_name, "entry_defs".into(), None, ())?;
       entry_defs  = decode_response(response)?;
    }
    /// Grab entry_def
