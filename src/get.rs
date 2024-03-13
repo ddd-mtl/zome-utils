@@ -80,7 +80,54 @@ pub fn get_data_type(hash: AnyLinkableHash) -> ExternResult<String> {
       ActionType::CreateLink => "CreateLink",
       ActionType::DeleteLink => "DeleteLink",
    };
-   return Ok(name.to_owned())
+   Ok(name.to_owned())
+}
+
+
+///
+pub fn get_app_entry_name(dh: AnyDhtHash) -> ExternResult<(AppEntryName, Record)> {
+   /// Grab Entry
+   let maybe_maybe_record = get(dh.clone(), GetOptions::content());
+   if let Err(err) = maybe_maybe_record {
+      warn!("Failed getting Record: {}", err);
+      return Err(err);
+   }
+   let Some(record) = maybe_maybe_record.unwrap() else {
+      return error("no Record found at address");
+   };
+   let RecordEntry::Present(entry) = record.entry() else {
+      return error("no Entry found at address");
+   };
+   /// Grab Type
+   let entry_type = get_entry_type(entry)?;
+   let EntryType::App(app_entry_def) = entry_type else {
+      return error("no AppEntry found at address");
+   };
+   let aen = get_app_entry_name_from_def(app_entry_def)?;
+
+   Ok((aen, record))
+}
+
+
+///
+pub fn get_app_entry_name_from_def(app_entry_def: AppEntryDef) -> ExternResult<AppEntryName> {
+   /// Grab zome
+   let dna = dna_info()?;
+   let this_zome_info = zome_info()?;
+   let mut entry_defs: EntryDefs = this_zome_info.entry_defs;
+   /// Grab entry_def from different zome
+   if this_zome_info.id != app_entry_def.zome_index {
+      let zome_name = dna.zome_names[app_entry_def.zome_index.0 as usize].clone();
+      let response = call(CallTargetCell::Local, zome_name, "entry_defs".into(), None, ())?;
+      entry_defs  = decode_response(response)?;
+   }
+   /// Grab entry_def
+   let entry_def: EntryDef = entry_defs.0[app_entry_def.entry_index.0 as usize].clone();
+   let EntryDefId::App(name) = entry_def.id else {
+      return error("Not an AppEntry");
+   };
+   /// Done
+   Ok(name)
 }
 
 
