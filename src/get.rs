@@ -32,7 +32,7 @@ pub fn get_entry_type(entry: &Entry) -> ExternResult<EntryType> {
       Entry::CapGrant(_grant) => EntryType::CapGrant,
       Entry::App(_entry_bytes) => {
          let eh = hash_entry(entry.clone())?;
-         get_entry_type_from_eh(eh)?
+         get_entry_type_from_hash(eh.into())?
       },
    };
    Ok(entry_type)
@@ -40,13 +40,47 @@ pub fn get_entry_type(entry: &Entry) -> ExternResult<EntryType> {
 
 
 /// Get EntryType at address
-pub fn get_entry_type_from_eh(eh: EntryHash) -> ExternResult<EntryType> {
-   let maybe_record = get(eh, GetOptions::latest())?;
+pub fn get_entry_type_from_hash(hash: AnyDhtHash) -> ExternResult<EntryType> {
+   let maybe_record = get(hash, GetOptions::content())?;
    let Some(record) = maybe_record else {
       return zome_error!("no record found for entry_hash");
    };
-   let entry_type = record.action().entry_type().unwrap().clone();
+   let entry_type = record.action().entry_type().ok_or(wasm_error!("No entry at given hash"))?.clone();
    Ok(entry_type)
+}
+
+
+/** */
+pub fn get_data_type(hash: AnyLinkableHash) -> ExternResult<String> {
+   let Some(dht) = hash.into_any_dht_hash() else {
+      return Ok("External".to_owned());
+   };
+   let maybe_record = get(dht, GetOptions::content())?;
+   let Some(record) = maybe_record else {
+      return zome_error!("no record found for dht");
+   };
+   if let Some(entry_type) = record.action().entry_type() {
+      let name = match entry_type {
+         EntryType::AgentPubKey => "AgentPubKey",
+         EntryType::CapClaim => "CapClaim",
+         EntryType::CapGrant => "CapGrant",
+         EntryType::App(_def) => "App",
+      };
+      return Ok(name.to_owned());
+   }
+   let name = match record.action().action_type() {
+      ActionType::Dna => "Dna",
+      ActionType::AgentValidationPkg=> "AgentValidationPkg",
+      ActionType::InitZomesComplete=> "InitZomesComplete",
+      ActionType::OpenChain=> "OpenChain",
+      ActionType::CloseChain=> "CloseChain",
+      ActionType::Create => "Create",
+      ActionType::Update => "Update",
+      ActionType::Delete => "Delete",
+      ActionType::CreateLink => "CreateLink",
+      ActionType::DeleteLink => "DeleteLink",
+   };
+   return Ok(name.to_owned())
 }
 
 

@@ -48,9 +48,10 @@ pub fn snip(agent: &AgentPubKey) -> String {
 
 /// Panic hook for zome debugging
 pub fn zome_panic_hook(info: &std::panic::PanicInfo) {
-   let mut msg = info.to_string();
-   msg.push_str("\n\nPanic during zome call ");
+   let mut msg = "\n\nPanic during zome call ".to_owned();
    msg.push_str(&dump_context());
+   msg.push_str("\n\n");
+   msg.push_str(&info.to_string());
    error!("{}\n\n", &msg);
 }
 
