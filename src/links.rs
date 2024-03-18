@@ -6,6 +6,20 @@ use hdk::prelude::holo_hash::hash_type::AnyLinkable;
 use crate as zome_utils;
 
 
+///
+pub fn get_all_links(base: AnyLinkableHash, link_type: LinkTypeFilter) -> ExternResult<Vec<Link>> {
+   return get_links(GetLinksInput {
+      base_address: base,
+      link_type,
+      get_options: GetOptions::network(),
+      tag_prefix: None,
+      after: None,
+      before: None,
+      author: None,
+   }
+   );
+}
+
 pub fn into_dht_hash(yh: AnyLinkableHash) -> ExternResult<AnyDhtHash> {
    match yh.into_primitive() {
       AnyLinkableHashPrimitive::Entry(eh) => Ok(AnyDhtHash::from(eh)),
@@ -24,13 +38,13 @@ fn links_to_GetInputs(links: Vec<Link>, maybe_filter: Option<AnyLinkable>) -> Ve
             if let Some(AnyLinkable::Action) = maybe_filter {
                continue;
             }            
-            GetInput::new(link.target.clone().into_entry_hash().unwrap().into(), GetOptions::content())
+            GetInput::new(link.target.clone().into_entry_hash().unwrap().into(), GetOptions::network())
          },
          AnyLinkable::Action => {
             if let Some(AnyLinkable::Entry) = maybe_filter {
                continue;
             }
-            GetInput::new(link.target.clone().into_action_hash().unwrap().into(), GetOptions::content())
+            GetInput::new(link.target.clone().into_action_hash().unwrap().into(), GetOptions::network())
          }
          AnyLinkable::External => continue,
       };
@@ -52,13 +66,8 @@ fn links_to_GetInputs(links: Vec<Link>, maybe_filter: Option<AnyLinkable>) -> Ve
 
 
 ///
-pub fn get_typed_from_links<R: TryFrom<Entry>>(
-   base: impl Into<AnyLinkableHash>,
-   link_type: impl LinkTypeFilterExt,
-   tag: Option<LinkTag>,
-   //include_latest_updated_entry: bool,
-) -> ExternResult<Vec<(R, Link)>> {
-   let links = get_links(base, link_type, tag)?;
+pub fn get_typed_from_links<R: TryFrom<Entry>>(input: GetLinksInput) -> ExternResult<Vec<(R, Link)>> {
+   let links = get_links(input)?;
    //debug!("get_typed_from_links() links found: {}", links.len());
    let input_pairs = links_to_GetInputs(links, None);
    //debug!("get_typed_from_links() input_pairs: {}", input_pairs.len());
@@ -78,12 +87,9 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(
 
 /// Returns Vec of: CreateLinkHash, LinkTarget, LinkAuthor, TypedEntry
 pub fn get_typed_from_actions_links<T: TryFrom<Entry>>(
-   base: impl Into<AnyLinkableHash>,
-   link_type: impl LinkTypeFilterExt,
-   tag: Option<LinkTag>,
-   //include_latest_updated_entry: bool,
+   input: GetLinksInput,
 ) -> ExternResult<Vec<(ActionHash, AnyLinkableHash, AgentPubKey, T)>> {
-   let links = get_links(base, link_type, tag)?;
+   let links = get_links(input)?;
    //debug!("get_typed_from_actions_links() links found: {}", links.len());
    let input_pairs = links_to_GetInputs(links, Some(AnyLinkable::Action));
    //debug!("get_typed_from_actions_links() input_pairs: {}", input_pairs.len());

@@ -25,12 +25,15 @@ impl ItemLink {
 
 
 /// Replacement of `get_links()` that converts all results to ItemLinks
-pub fn get_itemlinks(path: Path, link_filter: impl LinkTypeFilterExt, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
+pub fn get_itemlinks(path: Path, link_filter: LinkTypeFilter, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
   /// Grab Links
-  let links = get_links(
-    path.path_entry_hash()?,
-    link_filter,
-    link_tag,
+  let links = get_links( GetLinksInput {
+    base_address: AnyLinkableHash::from(path.path_entry_hash()?),
+    link_type: link_filter,
+    get_options: GetOptions::network(),
+    tag_prefix: link_tag,
+    before: None, after: None, author: None,
+  }
   )?;
   /// Convert to ItemLinks
   let res = links.into_iter().map(|link| ItemLink::from(link)).collect();

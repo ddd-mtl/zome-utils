@@ -1,16 +1,18 @@
 ///! Copy of the code from holochain but without internal calls to .ensure()
 
-use hdk::hash_path::path::{Component};
+//use hdk::hash_path::path::{Component};
 use hdk::prelude::*;
 
 
 /// Get all the links from this path to paths below it.
 /// Only returns links between paths, not to other entries that might have their own links.
 pub fn tp_children(tp: &TypedPath) -> ExternResult<Vec<holochain_zome_types::link::Link>> {
-  let mut unwrapped = get_links(
-    tp.path_entry_hash()?,
-    LinkTypeFilter::single_type(tp.link_type.zome_index, tp.link_type.zome_type),
-    None,
+  let mut unwrapped = get_links(GetLinksInput {
+      base_address: AnyLinkableHash::from(tp.path_entry_hash()?),
+      link_type: LinkTypeFilter::single_type(tp.link_type.zome_index, tp.link_type.zome_type),
+      get_options: GetOptions::network(),
+      tag_prefix: None,
+      after: None, before: None, author: None }
   )?;
   // Only need one of each hash to build the tree.
   unwrapped.sort_unstable_by(|a, b| a.tag.cmp(&b.tag));

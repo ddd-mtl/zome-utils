@@ -11,7 +11,7 @@ pub type OptionTypedEntryAndHash<T> = Option<TypedEntryAndHash<T>>;
 
 //// Get untyped entry from eh
 pub fn get_entry_from_eh(eh: EntryHash) -> ExternResult<Entry> {
-   match get(eh, GetOptions::content())? {
+   match get(eh, GetOptions::network())? {
       None => zome_error!("get_entry_from_eh(): Entry not found"),
       Some(record) => match record.entry() {
          RecordEntry::Present(entry) =>  {
@@ -41,7 +41,7 @@ pub fn get_entry_type(entry: &Entry) -> ExternResult<EntryType> {
 
 /// Get EntryType at address
 pub fn get_entry_type_from_hash(hash: AnyDhtHash) -> ExternResult<EntryType> {
-   let maybe_record = get(hash, GetOptions::content())?;
+   let maybe_record = get(hash, GetOptions::network())?;
    let Some(record) = maybe_record else {
       return zome_error!("no record found for entry_hash");
    };
@@ -55,7 +55,7 @@ pub fn get_data_type(hash: AnyLinkableHash) -> ExternResult<String> {
    let Some(dht) = hash.into_any_dht_hash() else {
       return Ok("External".to_owned());
    };
-   let maybe_record = get(dht, GetOptions::content())?;
+   let maybe_record = get(dht, GetOptions::network())?;
    let Some(record) = maybe_record else {
       return zome_error!("no record found for dht");
    };
@@ -87,7 +87,7 @@ pub fn get_data_type(hash: AnyLinkableHash) -> ExternResult<String> {
 ///
 pub fn get_app_entry_name(dh: AnyDhtHash, cell_target: CallTargetCell) -> ExternResult<(AppEntryName, Record)> {
    /// Grab Entry
-   let maybe_maybe_record = get(dh.clone(), GetOptions::content());
+   let maybe_maybe_record = get(dh.clone(), GetOptions::network());
    if let Err(err) = maybe_maybe_record {
       warn!("Failed getting Record: {}", err);
       return Err(err);
@@ -134,7 +134,7 @@ pub fn get_app_entry_name_from_def(app_entry_def: AppEntryDef, cell_target: Call
 /// Get EntryHash from a ActionHash
 pub fn get_eh(ah: ActionHash) -> ExternResult<EntryHash> {
    trace!("ah_to_eh() START - get...");
-   let maybe_record = get(ah, GetOptions::content())?;
+   let maybe_record = get(ah, GetOptions::network())?;
    let Some(record) = maybe_record else {
       warn!("ah_to_eh() END - Record not found");
       return zome_error!("ah_to_eh(): Record not found");
@@ -146,7 +146,7 @@ pub fn get_eh(ah: ActionHash) -> ExternResult<EntryHash> {
 
 /// Get EntryHash and typed Entry from a ActionHash
 pub fn get_typed_from_ah<T: TryFrom<Entry>>(hash: ActionHash) -> ExternResult<(EntryHash, T)> {
-   match get(hash.clone(), GetOptions::content())? {
+   match get(hash.clone(), GetOptions::network())? {
       Some(record) => {
          let eh = record.action().entry_hash().expect("Converting ActionHash which does not have an Entry");
          Ok((eh.clone(), get_typed_from_record(record)?))
@@ -158,7 +158,7 @@ pub fn get_typed_from_ah<T: TryFrom<Entry>>(hash: ActionHash) -> ExternResult<(E
 
 /// Get EntryHash and typed Entry from an EntryHash
 pub fn get_typed_from_eh<T: TryFrom<Entry>>(eh: EntryHash) -> ExternResult<T> {
-   match get(eh, GetOptions::content())? {
+   match get(eh, GetOptions::network())? {
       Some(record) => Ok(get_typed_from_record(record)?),
       None => zome_error!("get_typed_from_eh(): Entry not found"),
    }
@@ -178,7 +178,7 @@ pub fn get_typed_from_record<T: TryFrom<Entry>>(record: Record) -> ExternResult<
 /// Get author from AnyDhtHash
 /// Must be a single author entry type
 pub fn get_author(dht_hash: &AnyDhtHash) -> ExternResult<AgentPubKey> {
-   let maybe_maybe_record = get(dht_hash.clone(), GetOptions::content());
+   let maybe_maybe_record = get(dht_hash.clone(), GetOptions::network());
    if let Err(err) = maybe_maybe_record {
       warn!("Failed getting Record: {}", err);
       return Err(err);
@@ -197,7 +197,7 @@ pub fn get_typed_and_record<T: TryFrom<Entry>>(any_hash: &AnyLinkableHash)
    -> ExternResult<(Record, T)>
 {
    let dh = into_dht_hash(any_hash.to_owned())?;
-   let maybe_maybe_record = get(dh, GetOptions::content());
+   let maybe_maybe_record = get(dh, GetOptions::network());
    if let Err(err) = maybe_maybe_record {
       warn!("Failed getting Record: {}", err);
       return Err(err);
@@ -216,7 +216,7 @@ pub fn get_typed_and_author<T: TryFrom<Entry>>(any_hash: &AnyLinkableHash)
    -> ExternResult<(AgentPubKey, T)>
 {
    let dh = into_dht_hash(any_hash.to_owned())?;
-   let maybe_maybe_record = get(dh, GetOptions::content());
+   let maybe_maybe_record = get(dh, GetOptions::network());
    if let Err(err) = maybe_maybe_record {
       warn!("Failed getting Record: {}", err);
       return Err(err);
@@ -235,11 +235,11 @@ pub fn get_latest_typed_from_eh<T: TryFrom<SerializedBytes, Error = SerializedBy
    entry_hash: EntryHash,
 ) -> ExternResult<OptionTypedEntryAndHash<T>> {
    /// First, make sure we DO have the latest action_hash address
-   let maybe_maybe_details = get_details(entry_hash.clone(), GetOptions::latest())?;
+   let maybe_maybe_details = get_details(entry_hash.clone(), GetOptions::network())?;
    let Some(Details::Entry(details)) = maybe_maybe_details else {
       return Ok(None);
    };
-   if details.entry_dht_status != metadata::EntryDhtStatus::Live {
+   if details.entry_dht_status != EntryDhtStatus::Live {
       return Ok(None);
    }
    let latest_ah = match details.updates.len() {
@@ -255,7 +255,7 @@ pub fn get_latest_typed_from_eh<T: TryFrom<SerializedBytes, Error = SerializedBy
       }
    };
    /// Second, go and get that Record, and return its entry and action_address
-   let Some(record) = get(latest_ah, GetOptions::latest())? else {
+   let Some(record) = get(latest_ah, GetOptions::network())? else {
       return Ok(None);
    };
    let maybe_maybe_typed_entry = record.entry().to_app_option::<T>();
@@ -305,6 +305,6 @@ pub fn get_latest_entry(target: EntryHash, option: GetOptions) -> ExternResult<O
    let Some(eh) = sah.action().entry_hash() else {
       unreachable!();
    };
-   let record = get(eh.clone(), GetOptions::content())?.unwrap();
+   let record = get(eh.clone(), GetOptions::network())?.unwrap();
    Ok(record.entry.into_option())
 }
