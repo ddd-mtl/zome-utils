@@ -6,9 +6,35 @@ use hdk::prelude::holo_hash::hash_type::AnyLinkable;
 use crate as zome_utils;
 
 
+///-------------------------------------------------------------------------------------------------
+///  impl GetLinksInput
+///-------------------------------------------------------------------------------------------------
+
 ///
-pub fn get_all_links(base: AnyLinkableHash, link_type: LinkTypeFilter) -> ExternResult<Vec<Link>> {
-   return get_links(GetLinksInput {
+pub fn link_input_full(
+   base_address: AnyLinkableHash,
+   link_type: LinkTypeFilter,
+   get_options: GetOptions,
+   tag_prefix: Option<LinkTag>,
+   after: Option<Timestamp>,
+   before: Option<Timestamp>,
+   author: Option<AgentPubKey>,
+) -> GetLinksInput {
+   GetLinksInput {
+      base_address,
+      link_type,
+      get_options,
+      tag_prefix,
+      after,
+      before,
+      author,
+   }
+}
+
+
+///
+pub fn link_input(base: AnyLinkableHash, link_type: LinkTypeFilter) -> GetLinksInput {
+   GetLinksInput {
       base_address: base,
       link_type,
       get_options: GetOptions::network(),
@@ -17,9 +43,12 @@ pub fn get_all_links(base: AnyLinkableHash, link_type: LinkTypeFilter) -> Extern
       before: None,
       author: None,
    }
-   );
 }
 
+
+///-------------------------------------------------------------------------------------------------
+
+///
 pub fn into_dht_hash(yh: AnyLinkableHash) -> ExternResult<AnyDhtHash> {
    match yh.into_primitive() {
       AnyLinkableHashPrimitive::Entry(eh) => Ok(AnyDhtHash::from(eh)),
