@@ -33,16 +33,15 @@ pub fn link_input_full(
 
 
 ///
-pub fn link_input(base: AnyLinkableHash, link_type: LinkTypeFilter) -> GetLinksInput {
-   GetLinksInput {
-      base_address: base,
-      link_type,
-      get_options: GetOptions::network(),
-      tag_prefix: None,
-      after: None,
-      before: None,
-      author: None,
+pub fn link_input(
+   base_address: impl Into<AnyLinkableHash>,
+   link_type: impl LinkTypeFilterExt,
+   tag: Option<LinkTag>) -> GetLinksInput {
+   let mut input = GetLinksInputBuilder::try_new(base_address, link_type).unwrap();
+   if let Some(taggy) = tag {
+      input = input.tag_prefix(taggy);
    }
+   input.build()
 }
 
 
