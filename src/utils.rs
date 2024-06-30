@@ -28,20 +28,6 @@ pub fn now() -> u64 {
 }
 
 
-/// Get EntryDefIndex from a unit_enum
-pub fn get_variant_index<T: UnitEnum>(unknown: T::Unit) -> ExternResult<u8> {
-   let mut i = 0;
-   for variant in T::unit_iter() {
-      //debug!("get_variant_index() variant = {:?}", variant);
-      if variant == unknown {
-         return Ok(i);
-      }
-      i += 1;
-   }
-   return zome_error!("Unknown variant");
-}
-
-
 ///
 pub fn get_zome_index(candidat: ZomeName) -> ExternResult<u8> {
    let mut i = 0;
@@ -55,6 +41,32 @@ pub fn get_zome_index(candidat: ZomeName) -> ExternResult<u8> {
    return zome_error!("Unknown Zome");
 }
 
+
+/// Get EntryDefIndex from a unit_enum
+pub fn get_index_from_variant<T: UnitEnum>(unknown: T::Unit) -> ExternResult<u8> {
+   let mut i = 0;
+   for variant in T::unit_iter() {
+      //debug!("get_variant_index() variant = {:?}", variant);
+      if variant == unknown {
+         return Ok(i);
+      }
+      i += 1;
+   }
+   return zome_error!("Unknown variant");
+}
+
+
+///
+pub fn get_variant_from_index<T: UnitEnum>(entry_index: EntryDefIndex) -> ExternResult<T::Unit> {
+   let mut i = 0;
+   for variant in T::unit_iter() {
+      if i == entry_index.0 {
+         return Ok(variant);
+      }
+      i += 1;
+   }
+   return Err(wasm_error!(format!("Unknown EntryDefIndex: {}", entry_index.0)));
+}
 
 
 //
