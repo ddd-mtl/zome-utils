@@ -308,3 +308,20 @@ pub fn get_latest_entry(target: EntryHash, option: GetOptions) -> ExternResult<O
    let record = get(eh.clone(), GetOptions::network())?.unwrap();
    Ok(record.entry.into_option())
 }
+
+
+/// Recursively call get_details() until no updates are found
+/// If multiple updates are found. It will take the last one in the list.
+pub fn get_latest_record(action_hash: ActionHash) -> ExternResult<Record> {
+   let Some(details) = get_details(action_hash, GetOptions::default())?
+       else { return zome_error!("Record not found")};
+   match details {
+      Details::Entry(_) => zome_error!("Malformed details"),
+      Details::Record(element_details) => {
+         match element_details.updates.last() {
+            Some(update) => get_latest_record(update.action_address().clone()),
+            None => Ok(element_details.record),
+         }
+      },
+   }
+}
