@@ -191,9 +191,8 @@ pub fn get_latest_typed_from_eh<T: TryFrom<SerializedBytes, Error = SerializedBy
 ///
 pub fn get_latest_entry(target: EntryHash, option: GetOptions) -> ExternResult<Option<Entry>> {
    let details = get_details(target, option.clone())?;
-   let Some(Details::Entry(EntryDetails { entry, updates, .. })) = details else {
-      return Ok(None);
-   };
+   let Some(Details::Entry(EntryDetails { entry, updates, .. })) = details
+       else { return Ok(None); };
    /// No updates, we are done
    if updates.is_empty() {
       return Ok(Some(entry));
@@ -214,11 +213,9 @@ pub fn get_latest_entry(target: EntryHash, option: GetOptions) -> ExternResult<O
             None => Some(update),
          },
       )
-      .expect("Updates are not empty");
-   let Some(eh) = sah.action().entry_hash() else {
-      unreachable!();
-   };
-   let record = get(eh.clone(), GetOptions::network())?.unwrap();
+      .expect("updates are not empty");
+   let eh = sah.action().entry_hash().unwrap();
+   let record = get_record(AnyDhtHash::from(eh.to_owned()))?;
    Ok(record.entry.into_option())
 }
 
