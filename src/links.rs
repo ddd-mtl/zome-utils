@@ -57,7 +57,7 @@ pub fn into_dht_hash(yh: AnyLinkableHash) -> ExternResult<AnyDhtHash> {
 }
 
 
-#[allow(non_snake_case)]
+///
 fn links_to_GetInputs(links: Vec<Link>, maybe_filter: Option<AnyLinkable>) -> Vec<(GetInput, Link)> {
    let mut get_inputs: Vec<(GetInput, Link)> = Vec::new();
    for link in links.into_iter() {
@@ -114,16 +114,15 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(input: GetLinksInput) -> ExternRe
 
 
 /// Returns Vec of: CreateLinkHash, LinkTarget, LinkAuthor, TypedEntry
-pub fn get_typed_from_actions_links<T: TryFrom<Entry>>(
-   input: GetLinksInput,
-) -> ExternResult<Vec<(ActionHash, AnyLinkableHash, AgentPubKey, T)>> {
+pub fn get_typed_from_actions_links<T: TryFrom<Entry>>(input: GetLinksInput)
+   -> ExternResult<Vec<(ActionHash, AnyLinkableHash, AgentPubKey, T)>> {
    let links = get_links(input)?;
    //debug!("get_typed_from_actions_links() links found: {}", links.len());
    let input_pairs = links_to_GetInputs(links, Some(AnyLinkable::Action));
    //debug!("get_typed_from_actions_links() input_pairs: {}", input_pairs.len());
    let mut tuples: Vec<(ActionHash, AnyLinkableHash, AgentPubKey, T)> = Vec::new();
    for (_input, link) in input_pairs.into_iter() {
-      let Ok(p) = zome_utils::get_typed_and_author::<T>(&link.target)
+      let Ok(p) = zome_utils::get_typed_and_author::<T>(link.target.clone())
          else {continue};
       tuples.push((link.create_link_hash, link.target, p.0, p.1));
    }

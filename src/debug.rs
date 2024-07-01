@@ -1,20 +1,8 @@
 //! Debugging helpers
 
 use hdk::prelude::*;
-//use holo_hash::*;
-
 use crate as zome_utils;
 
-// #[macro_export]
-// macro_rules! zome_error {
-//    ($($arg:tt)*) => {
-//       {
-//          let reason = format!($($arg)*);
-//          let msg = format!("{} ; Context: {}", reason, zome_utils::dump_context());
-//          Err(wasm_error!(WasmErrorInner::Guest(msg)))
-//       }
-//    }
-// }
 
 
 #[macro_export]
@@ -32,6 +20,24 @@ macro_rules! zome_error {
          Err(error)
       }
    }
+}
+
+
+///
+pub fn error<T>(reason: &str) -> ExternResult<T> {
+   let msg = format!("{} ; Context: {}", reason, dump_context());
+   let error = WasmError {
+      file: String::new(),
+      line: 0,
+      error: WasmErrorInner::Guest(msg),
+   };
+   Err(error)
+}
+
+
+///
+pub fn invalid(reason: &str) -> ExternResult<ValidateCallbackResult> {
+   Ok(ValidateCallbackResult::Invalid(reason.to_string()))
 }
 
 
@@ -55,15 +61,6 @@ pub fn dump_context() -> String {
 }
 
 
-/// Shorten AgentPubKey for printing
-pub fn snip(agent: &AgentPubKey) -> String {
-   //format!("{:?}", agent)[12..24].to_string()
-   //format!("{}", agent)[..12].to_string()
-   let b64: AgentPubKeyB64 = AgentPubKeyB64::from(agent.clone());
-   format!("{:?}", b64)[24..36].to_string()
-}
-
-
 /// Panic hook for zome debugging
 pub fn zome_panic_hook(info: &std::panic::PanicInfo) {
    let mut msg = "\n\nPanic during zome call ".to_owned();
@@ -73,22 +70,6 @@ pub fn zome_panic_hook(info: &std::panic::PanicInfo) {
    error!("{}\n\n", &msg);
 }
 
-
-///
-pub fn error<T>(reason: &str) -> ExternResult<T> {
-   let msg = format!("{} ; Context: {}", reason, dump_context());
-   let error = WasmError {
-      file: String::new(),
-      line: 0,
-      error: WasmErrorInner::Guest(msg),
-   };
-   Err(error)
-}
-
-
-pub fn invalid(reason: &str) -> ExternResult<ValidateCallbackResult> {
-   Ok(ValidateCallbackResult::Invalid(reason.to_string()))
-}
 
 
 /// Convert ZomeCallResponse to ExternResult
@@ -104,9 +85,17 @@ pub fn decode_response<T>(response: ZomeCallResponse) -> ExternResult<T>
             .map_err(|_| error::<T>("Deserializing response output failed").err().unwrap());
          res
       },
-      ZomeCallResponse::Unauthorized(_, _, _, _, _) => zome_error!("Unauthorized call"),
+      ZomeCallResponse::Unauthorized(auth, _, _, fn_name, _) => zome_error!("Unauthorized call to {}(): {:?}", fn_name, auth),
       ZomeCallResponse::NetworkError(e) => zome_error!("NetworkError: {:?}", e),
       ZomeCallResponse::CountersigningSession(e) => zome_error!("CountersigningSession: {:?}", e),
    };
 }
 
+
+/// Shorten AgentPubKey for printing
+pub fn snip(agent: &AgentPubKey) -> String {
+   //format!("{:?}", agent)[12..24].to_string()
+   //format!("{}", agent)[..12].to_string()
+   let b64: AgentPubKeyB64 = AgentPubKeyB64::from(agent.clone());
+   format!("{:?}", b64)[5..13].to_string()
+}
