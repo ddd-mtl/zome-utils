@@ -31,7 +31,12 @@ pub fn tp_children(tp: &TypedPath) -> ExternResult<Vec<holochain_zome_types::lin
 pub fn tp_children_paths(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
   let children = tp_children(tp)?;
   //debug!("tp_children_paths() children = {:?}", children);
+  return links_to_paths(tp, children);
+}
 
+
+///
+pub fn links_to_paths(tp: &TypedPath, children: Vec<Link>) -> ExternResult<Vec<TypedPath>> {
   let components: ExternResult<Vec<Option<Component>>> = children
     .into_iter()
     .map(|link| {
