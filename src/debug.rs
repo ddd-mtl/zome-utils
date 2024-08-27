@@ -95,7 +95,7 @@ pub fn decode_response<T>(response: ZomeCallResponse) -> ExternResult<T>
 /// Shorten AgentPubKey for printing
 pub fn snip(agent: &AgentPubKey) -> String {
    //format!("{:?}", agent)[12..24].to_string()
-   //format!("{}", agent)[..12].to_string()
-   let b64: AgentPubKeyB64 = AgentPubKeyB64::from(agent.clone());
-   format!("{:?}", b64)[5..13].to_string()
+   format!("{}", agent)[5..13].to_string()
+   //let b64: AgentPubKeyB64 = AgentPubKeyB64::from(agent.clone());
+   //format!("{:?}", b64)[5..13].to_string()
 }
