@@ -15,8 +15,8 @@ non_snake_case = "allow"
 unused_attributes = "allow"
 
 [dependencies]
-serde = { version = "1.0.197", default-features = false }
-hdk = { version = "=0.4.0-dev.14", features = ["encoding"] }
+serde = { version = "1.0.203", default-features = false }
+hdk = { version = "=0.4.0-dev.16", features = ["encoding"] }
 
 #chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
 #holochain_zome_types = { version = "=0.2.4", default-features = false }
