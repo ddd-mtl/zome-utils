@@ -16,11 +16,11 @@ unused_attributes = "allow"
 
 [dependencies]
 serde = { version = "1.0.203", default-features = false }
-hdk = { version = "=0.4.0-dev.14", features = ["encoding"] }
+hdk = { version = "=0.4.0-dev.19", features = ["encoding"] }
 
-# Broken hdk deps
-hdk_derive = { version = "=0.4.0-dev.12", default-features = false }
-holochain_integrity_types = "=0.4.0-dev.12"
+## Broken hdk deps
+#hdk_derive = { version = "=0.4.0-dev.12", default-features = false }
+#holochain_integrity_types = "=0.4.0-dev.12"
 
 #chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
 #holochain_zome_types = { version = "=0.2.4", default-features = false }
