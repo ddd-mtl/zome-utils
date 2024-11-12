@@ -229,7 +229,13 @@ pub fn get_latest_record(action_hash: ActionHash) -> ExternResult<Record> {
       Details::Entry(_) => zome_error!("Malformed details"),
       Details::Record(element_details) => {
          match element_details.updates.last() {
-            Some(update) => get_latest_record(update.action_address().clone()),
+            Some(update) => match get_latest_record(update.action_address().clone()) {
+               Ok(record) => Ok(record),
+               Err(_) => {
+                  //println!("Failed to find latest record. Returning previous one.");
+                  Ok(element_details.record)
+               },
+            }
             None => Ok(element_details.record),
          }
       },

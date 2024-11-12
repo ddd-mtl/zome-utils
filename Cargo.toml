@@ -16,7 +16,7 @@ unused_attributes = "allow"
 
 [dependencies]
 serde = { version = "1.0.203", default-features = false }
-hdk = { version = "=0.3.2", features = ["encoding"] }
+hdk = { version = "=0.3.4", features = ["encoding"] }
 
 # Broken hdk deps
 #hdk_derive = { version = "=0.3.2", default-features = false }
