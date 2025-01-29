@@ -1,17 +1,28 @@
 [package]
 name = "zome_utils"
 version = "0.1.0"
-rust-version = "1.65.0"
+rust-version = "1.75.0"
 edition = "2021"
 
 [lib]
 crate-type = [ "cdylib", "rlib" ]
 
+[lints.rust]
+non_upper_case_globals = "allow"
+unused_doc_comments = "allow"
+non_camel_case_types = "allow"
+non_snake_case = "allow"
+unused_attributes = "allow"
+
 [dependencies]
-serde = { version = "1.0.197", default-features = false }
+serde = { version = "1.0.203", default-features = false }
+hdk = { version = "=0.4.0-rc.1", features = ["encoding"] }
+
+## Broken hdk deps
+#hdk_derive = { version = "=0.4.0-dev.12", default-features = false }
+#holochain_integrity_types = "=0.4.0-dev.12"
+
 #chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
 #holochain_zome_types = { version = "=0.2.4", default-features = false }
-hdk = { version = "=0.4.0-dev.4", features = ["encoding"] }
-
 # Force a specific version since hdk won't compile otherwise
 #holochain_integrity_types = { version = "=0.1.1" }

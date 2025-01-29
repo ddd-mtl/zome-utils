@@ -1,5 +1,20 @@
 use hdk::prelude::*;
 
+/// Note: same implementation as update_entry() but with Relaxed chain ordering
+pub fn update_entry_relaxed<I, E>(hash: ActionHash, input: I) -> ExternResult<ActionHash>
+where
+  Entry: TryFrom<I, Error = E>,
+  WasmError: From<E>,
+{
+   let input = UpdateInput {
+      original_action_address: hash,
+      entry: input.try_into()?,
+      chain_top_ordering: ChainTopOrdering::Relaxed,
+   };
+   update(input)
+}
+
+
 /// Note: same implementation as create_entry() but with Relaxed chain ordering
 pub fn create_entry_relaxed<I, E, E2>(typed: I) -> ExternResult<ActionHash>
    where
@@ -61,4 +76,10 @@ pub fn delete_link_relaxed(address: ActionHash) -> ExternResult<ActionHash> {
    })
 }
 
-
+///
+pub fn delete_entry_relaxed(address: ActionHash) -> ExternResult<ActionHash> {
+   HDK.with(|h| {
+      h.borrow()
+        .delete(DeleteInput::new(address, ChainTopOrdering::Relaxed))
+   })
+}
