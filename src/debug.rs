@@ -62,7 +62,7 @@ pub fn dump_context() -> String {
 
 
 /// Panic hook for zome debugging
-pub fn zome_panic_hook(info: &std::panic::PanicInfo) {
+pub fn zome_panic_hook(info: &std::panic::PanicHookInfo) {
    let mut msg = "\n\nPanic during zome call ".to_owned();
    msg.push_str(&dump_context());
    msg.push_str("\n\n");
