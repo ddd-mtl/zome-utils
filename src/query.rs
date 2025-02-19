@@ -55,13 +55,13 @@ pub fn get_all_typed_local<R: TryFrom<Entry>>(entry_type: EntryType)
 /// Get Record at address using query()
 pub fn get_local_from_eh(eh: EntryHash) -> ExternResult<Record> {
    let mut set = HashSet::with_capacity(1);
-   set.insert(eh);
+   set.insert(eh.clone());
    let query_args = ChainQueryFilter::default()
       .include_entries(true)
       .entry_hashes(set);
    let vec = query(query_args)?;
    if vec.len() != 1 {
-      return zome_error!("Record not found at given EntryHash");
+      return zome_error!("{}", format!("Record not found at given EntryHash {}", eh));
    }
    Ok(vec[0].clone())
 }
@@ -81,6 +81,6 @@ pub fn get_local_from_ah(ah: ActionHash) -> ExternResult<Record> {
          return Ok(record.clone());
       }
    }
-   return zome_error!("Record not found at given ActionHash");
+   return zome_error!("{}", format!("Record not found at given ActionHash {}", ah));
 }
 

@@ -11,9 +11,9 @@ pub type OptionTypedEntryAndHash<T> = Option<TypedEntryAndHash<T>>;
 
 /// Get Record from AnyDhtHash
 pub fn get_record(dh: AnyDhtHash) -> ExternResult<Record> {
-   let maybe_record = get(dh, GetOptions::network())?;
+   let maybe_record = get(dh.clone(), GetOptions::network())?;
    let Some(record) = maybe_record else {
-      return zome_error!("no Record found at given hash");
+      return zome_error!("{}", format!("No Record found at given hash {}", dh));
    };
    Ok(record)
 }
@@ -21,8 +21,9 @@ pub fn get_record(dh: AnyDhtHash) -> ExternResult<Record> {
 /// Get untyped entry from eh
 pub fn get_entry(dh: AnyDhtHash) -> ExternResult<Entry> {
    let record = get_record(dh)?;
-   let RecordEntry::Present(entry) = record.entry()
-       else { return  zome_error!("Record does not hold an Entry"); };
+   let RecordEntry::Present(entry) = record.entry() else {
+      return zome_error!("{}", format!("Record does not hold an Entry. {}", record.action_address()));
+   };
    Ok(entry.to_owned())
 }
 
@@ -30,8 +31,9 @@ pub fn get_entry(dh: AnyDhtHash) -> ExternResult<Entry> {
 /// Get untyped entry from eh
 pub fn get_entry_from_eh(eh: EntryHash) -> ExternResult<Entry> {
    let record = get_record(AnyDhtHash::from(eh))?;
-   let RecordEntry::Present(entry) = record.entry()
-      else { return  zome_error!("Record does not hold an Entry"); };
+   let RecordEntry::Present(entry) = record.entry() else {
+      return zome_error!("{}", format!("Record does not hold an Entry. {}", record.action_address()));
+   };
    Ok(entry.clone())
 }
 
@@ -40,7 +42,7 @@ pub fn get_entry_from_eh(eh: EntryHash) -> ExternResult<Entry> {
 pub fn get_eh(ah: ActionHash) -> ExternResult<EntryHash> {
    let record = get_record(AnyDhtHash::from(ah))?;
    let  Some(eh) = record.action().entry_hash() else {
-      return zome_error!("Record does not hold an EntryHash");
+      return zome_error!("{}", format!("Record does not hold an EntryHash. {}", record.action_address()));
    };
    Ok(eh.to_owned())
 }
@@ -57,8 +59,9 @@ pub fn get_author(dh: AnyDhtHash) -> ExternResult<AgentPubKey> {
 
 /// Get typed Entry from Record
 pub fn get_typed_from_record<T: TryFrom<Entry>>(record: Record) -> ExternResult<T> {
-   let RecordEntry::Present(entry) = record.entry()
-       else { return zome_error!("Record does not hold an Entry"); };
+   let RecordEntry::Present(entry) = record.entry() else {
+      return zome_error!("{}", format!("Record does not hold an Entry. {}", record.action_address()));
+   };
    let res = T::try_from(entry.clone());
    let err = error::<T>(&format!("Converting Entry to type failed for entry: {:?}", entry)).err().unwrap();
    return res.map_err(|_|err);
@@ -75,7 +78,7 @@ pub fn get_typed_from_eh<T: TryFrom<Entry>>(eh: EntryHash) -> ExternResult<T> {
 pub fn get_typed_from_ah<T: TryFrom<Entry>>(ah: ActionHash) -> ExternResult<(EntryHash, T)> {
    let record = get_record(AnyDhtHash::from(ah))?;
    let  Some(eh) = record.action().entry_hash() else {
-      return zome_error!("Record does not hold an EntryHash");
+      return zome_error!("{}", format!("Record does not hold an EntryHash. {}", record.action_address()));
    };
    Ok((eh.to_owned(), get_typed_from_record(record)?))
 }
@@ -105,14 +108,15 @@ pub fn get_typed_and_author<T: TryFrom<Entry>>(lh: AnyLinkableHash) -> ExternRes
 
 
 ///
-pub fn get_app_entry_name(dh: AnyDhtHash, cell_target: CallTargetCell) -> ExternResult<(AppEntryName, Entry)>
+pub fn get_app_entry_name(dh: AnyDhtHash, cell_target: CallTargetCell)
+   -> ExternResult<(AppEntryName, Entry)>
 {
    /// Grab Entry
-   let entry = get_entry(dh)?;
+   let entry = get_entry(dh.clone())?;
    /// Grab Type
    let entry_type = get_entry_type(&entry)?;
    let EntryType::App(app_entry_def) = entry_type else {
-      return zome_error!("no AppEntry found at given hash");
+      return zome_error!("{}", format!("No AppEntry found at given hash {}", dh));
    };
    let aen = get_app_entry_name_from_def(app_entry_def, cell_target)?;
    ///
@@ -121,7 +125,8 @@ pub fn get_app_entry_name(dh: AnyDhtHash, cell_target: CallTargetCell) -> Extern
 
 
 ///
-pub fn get_app_entry_name_from_def(app_entry_def: AppEntryDef, cell_target: CallTargetCell) -> ExternResult<AppEntryName>
+pub fn get_app_entry_name_from_def(app_entry_def: AppEntryDef, cell_target: CallTargetCell)
+   -> ExternResult<AppEntryName>
 {
    /// Grab zome
    let dna = dna_info()?;
@@ -222,11 +227,11 @@ pub fn get_latest_entry(target: EntryHash, option: GetOptions) -> ExternResult<O
 
 /// Recursively call get_details() until no updates are found
 /// If multiple updates are found. It will take the last one in the list.
-pub fn get_latest_record(action_hash: ActionHash) -> ExternResult<Record> {
-   let Some(details) = get_details(action_hash, GetOptions::default())?
-   else { return zome_error!("Record not found")};
+pub fn get_latest_record(ah: ActionHash) -> ExternResult<Record> {
+   let Some(details) = get_details(ah.clone(), GetOptions::default())?
+   else { return zome_error!("{}", format!("Record not found at hash {}", ah))};
    match details {
-      Details::Entry(_) => zome_error!("Malformed details"),
+      Details::Entry(_) => zome_error!("{}", format!("Malformed details for hash {}", ah)),
       Details::Record(element_details) => {
          match element_details.updates.last() {
             Some(update) => match get_latest_record(update.action_address().clone()) {
@@ -263,7 +268,7 @@ pub fn get_entry_type(entry: &Entry) -> ExternResult<EntryType> {
 pub fn get_entry_type_at(dh: AnyDhtHash) -> ExternResult<EntryType> {
    let record = get_record(dh)?;
    let Some(entry_type) = record.action().entry_type() else {
-      return zome_error!("No Entry at given hash");
+      return zome_error!("{}", format!("No Entry at given hash {}", record.action_address()));
    };
    ///
    Ok(entry_type.to_owned())
@@ -275,9 +280,9 @@ pub fn get_linkable_type(hash: AnyLinkableHash) -> ExternResult<String> {
    let Some(dht) = hash.into_any_dht_hash() else {
       return Ok("External".to_owned());
    };
-   let maybe_record = get(dht, GetOptions::network())?;
+   let maybe_record = get(dht.clone(), GetOptions::network())?;
    let Some(record) = maybe_record else {
-      return zome_error!("no Record found at given hash");
+      return zome_error!("{}", format!("No Record at given hash {}", dht));
    };
    if let Some(entry_type) = record.action().entry_type() {
       let name = match entry_type {
