@@ -55,7 +55,7 @@ pub fn dump_context() -> String {
    }
    let maybe_agent_info = agent_info();
    if let Ok(agent_info) = maybe_agent_info {
-      msg.push_str(&format!("in chain of {}", snip(&agent_info.agent_latest_pubkey)));
+      msg.push_str(&format!("in chain of {}", snip(&agent_info.agent_initial_pubkey)));
    }
    msg
 }
@@ -85,7 +85,8 @@ pub fn decode_response<T>(response: ZomeCallResponse) -> ExternResult<T>
             .map_err(|_| error::<T>("Deserializing response output failed").err().unwrap());
          res
       },
-      ZomeCallResponse::Unauthorized(auth, _, _, fn_name, _) => zome_error!("Unauthorized call to {}(): {:?}", fn_name, auth),
+      ZomeCallResponse::AuthenticationFailed(_sign, apk) => zome_error!("AuthenticationFailed call: {:?}", apk),
+      ZomeCallResponse::Unauthorized(auth, _, _, fn_name) => zome_error!("Unauthorized call to {}(): {:?}", fn_name, auth),
       ZomeCallResponse::NetworkError(e) => zome_error!("NetworkError: {:?}", e),
       ZomeCallResponse::CountersigningSession(e) => zome_error!("CountersigningSession: {:?}", e),
    };

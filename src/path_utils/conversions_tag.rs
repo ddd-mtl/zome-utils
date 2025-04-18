@@ -34,7 +34,7 @@ pub fn tag2hash<T: HashType>(tag: &LinkTag) -> ExternResult<HoloHash<T>> {
   // }
   let raw_hash = holo_hash_decode_unchecked(&hash_str)
      .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-  let hash = HoloHash::<T>::from_raw_39(raw_hash)
+  let hash = HoloHash::<T>::try_from_raw_39(raw_hash)
      .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
   Ok(hash)
 }

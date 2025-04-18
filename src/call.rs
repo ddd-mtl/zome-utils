@@ -12,7 +12,7 @@ pub fn call_self<I>(fn_name: &str, payload: I) -> ExternResult<ZomeCallResponse>
 {
    // TODO check fn_name exists?
    call_remote(
-      agent_info()?.agent_latest_pubkey,
+      agent_info()?.agent_initial_pubkey,
       zome_info()?.name,
       fn_name.to_string().into(),
       None,
