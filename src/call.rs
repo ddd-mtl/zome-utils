@@ -1,4 +1,4 @@
-//! All helper functions calling `call()` or `call_remote()`
+//! All helper functions calling `call()`
 
 use hdk::prelude::*;
 use crate as zome_utils;
@@ -11,8 +11,8 @@ pub fn call_self<I>(fn_name: &str, payload: I) -> ExternResult<ZomeCallResponse>
       I: serde::Serialize + std::fmt::Debug
 {
    // TODO check fn_name exists?
-   call_remote(
-      agent_info()?.agent_initial_pubkey,
+   call(
+      CallTargetCell::Local,
       zome_info()?.name,
       fn_name.to_string().into(),
       None,
