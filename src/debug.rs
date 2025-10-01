@@ -44,8 +44,7 @@ pub fn invalid(reason: &str) -> ExternResult<ValidateCallbackResult> {
 /// Return zome context as String
 pub fn dump_context() -> String {
    let mut msg = String::new();
-   let maybe_zome_info = zome_info();
-   if let Ok(zome_info) = maybe_zome_info {
+   if let Ok(zome_info) = zome_info() {
       let maybe_call_info = call_info();
       if let Ok(call_info) = maybe_call_info {
          let provenance = snip(&call_info.provenance);
@@ -53,8 +52,7 @@ pub fn dump_context() -> String {
                                zome_info.name, call_info.function_name, provenance));
       }
    }
-   let maybe_agent_info = agent_info();
-   if let Ok(agent_info) = maybe_agent_info {
+   if let Ok(agent_info) = agent_info() {
       msg.push_str(&format!("in chain of {}", snip(&agent_info.agent_initial_pubkey)));
    }
    msg
