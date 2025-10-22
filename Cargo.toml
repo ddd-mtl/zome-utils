@@ -18,7 +18,9 @@ unused_attributes = "allow"
 serde = { version = "1.0.219", default-features = false }
 hdk = { version = "=0.6.0-dev.21", features = ["encoding"] }
 
-## Broken hdk deps
+# Broken hdk deps
+#getrandom = { version = "=0.3.4", features = ["wasm_js"] }
+
 #hdk_derive = { version = "=0.4.0-dev.12", default-features = false }
 #holochain_integrity_types = "=0.4.0-dev.12"
 
