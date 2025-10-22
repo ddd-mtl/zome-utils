@@ -72,7 +72,7 @@ pub fn create_link_relaxed<T, E>(
 pub fn delete_link_relaxed(address: ActionHash) -> ExternResult<ActionHash> {
    HDK.with(|h| {
       h.borrow()
-       .delete_link(DeleteLinkInput::new(address, ChainTopOrdering::Relaxed))
+       .delete_link(DeleteLinkInput::new(address, GetOptions::default(), ChainTopOrdering::Relaxed))
    })
 }
 

@@ -7,23 +7,21 @@ use crate as zome_utils;
 
 
 ///-------------------------------------------------------------------------------------------------
-///  impl GetLinksInput
+///  impl LinkQuery
 ///-------------------------------------------------------------------------------------------------
 
 ///
 pub fn link_input_full(
-   base_address: AnyLinkableHash,
+   base: AnyLinkableHash,
    link_type: LinkTypeFilter,
-   get_options: GetOptions,
    tag_prefix: Option<LinkTag>,
    after: Option<Timestamp>,
    before: Option<Timestamp>,
    author: Option<AgentPubKey>,
-) -> GetLinksInput {
-   GetLinksInput {
-      base_address,
+) -> LinkQuery {
+   LinkQuery {
+      base,
       link_type,
-      get_options,
       tag_prefix,
       after,
       before,
@@ -36,8 +34,8 @@ pub fn link_input_full(
 pub fn link_input(
    base_address: impl Into<AnyLinkableHash>,
    link_type: impl LinkTypeFilterExt,
-   tag: Option<LinkTag>) -> GetLinksInput {
-   let mut input = GetLinksInputBuilder::try_new(base_address, link_type).unwrap();
+   tag: Option<LinkTag>) -> LinkQuery {
+   let mut input = LinkQueryBuilder::try_new(base_address, link_type).unwrap();
    if let Some(taggy) = tag {
       input = input.tag_prefix(taggy);
    }
@@ -94,8 +92,8 @@ fn links_to_GetInputs(links: Vec<Link>, maybe_filter: Option<AnyLinkable>) -> Ve
 
 
 ///
-pub fn get_typed_from_links<R: TryFrom<Entry>>(input: GetLinksInput) -> ExternResult<Vec<(R, Link)>> {
-   let links = get_links(input)?;
+pub fn get_typed_from_links<R: TryFrom<Entry>>(input: LinkQuery) -> ExternResult<Vec<(R, Link)>> {
+   let links = get_links(input, GetStrategy::Network)?;
    //debug!("get_typed_from_links() links found: {}", links.len());
    let input_pairs = links_to_GetInputs(links, None);
    //debug!("get_typed_from_links() input_pairs: {}", input_pairs.len());
@@ -114,9 +112,9 @@ pub fn get_typed_from_links<R: TryFrom<Entry>>(input: GetLinksInput) -> ExternRe
 
 
 /// Returns Vec of: CreateLinkHash, LinkTarget, LinkAuthor, TypedEntry
-pub fn get_typed_from_actions_links<T: TryFrom<Entry>>(input: GetLinksInput)
+pub fn get_typed_from_actions_links<T: TryFrom<Entry>>(input: LinkQuery)
    -> ExternResult<Vec<(ActionHash, AnyLinkableHash, AgentPubKey, T)>> {
-   let links = get_links(input)?;
+   let links = get_links(input, GetStrategy::Network)?;
    //debug!("get_typed_from_actions_links() links found: {}", links.len());
    let input_pairs = links_to_GetInputs(links, Some(AnyLinkable::Action));
    //debug!("get_typed_from_actions_links() input_pairs: {}", input_pairs.len());

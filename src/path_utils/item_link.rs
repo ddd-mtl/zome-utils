@@ -27,13 +27,12 @@ impl ItemLink {
 /// Replacement of `get_links()` that converts all results to ItemLinks
 pub fn get_itemlinks(path: Path, link_filter: LinkTypeFilter, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
   /// Grab Links
-  let links = get_links( GetLinksInput {
-    base_address: AnyLinkableHash::from(path.path_entry_hash()?),
+  let links = get_links( LinkQuery {
+    base: AnyLinkableHash::from(path.path_entry_hash()?),
     link_type: link_filter,
-    get_options: GetOptions::network(),
     tag_prefix: link_tag,
     before: None, after: None, author: None,
-  }
+  }, GetStrategy::Network
   )?;
   /// Convert to ItemLinks
   let res = links.into_iter().map(|link| ItemLink::from(link)).collect();
