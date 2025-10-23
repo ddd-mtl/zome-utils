@@ -33,12 +33,11 @@ pub fn link_input_full(
 ///
 pub fn link_input<LinkTypeFilterExt>(
    base_address: impl Into<AnyLinkableHash>,
-   link_type: LinkTypeFilterExt,
+   link_type:  impl Into<LinkTypeFilter>,
    tag: Option<LinkTag>)
-   -> LinkQuery where
-   LinkTypeFilterExt: TryInto<LinkTypeFilter, Error = WasmError>
+   -> LinkQuery
 {
-   let mut input = LinkQuery::try_new(base_address, link_type).unwrap();
+   let mut input = LinkQuery::new(base_address, link_type);
    if let Some(taggy) = tag {
       input = input.tag_prefix(taggy);
    }
