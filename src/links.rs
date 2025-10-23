@@ -31,7 +31,7 @@ pub fn link_input_full(
 
 
 ///
-pub fn link_input<LinkTypeFilterExt>(
+pub fn link_input(
    base_address: impl Into<AnyLinkableHash>,
    link_type:  impl Into<LinkTypeFilter>,
    tag: Option<LinkTag>)
