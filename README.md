@@ -1,3 +1,5 @@
+** REPO ARCHIVED. MOVED TO [ZDK](https://github.com/ddd-mtl/zdk) AND [LIT-HAPP](https://github.com/ddd-mtl/lit-happ) REPOS **
+
 # Zome utils
 
 Rust library of helper functions for Holochain Zome development
